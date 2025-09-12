@@ -32,7 +32,9 @@ func SendJSONResponse(resp http.ResponseWriter, status int, message string, data
 	}
 
 	resp.WriteHeader(status)
-	resp.Write(jsonResponse)
+	if _, err := resp.Write(jsonResponse); err != nil {
+		return err
+	}
 
 	return nil
 }
