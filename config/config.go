@@ -1,8 +1,6 @@
 package config
 
 import (
-	"api-gateway-sql/logging"
-
 	"fmt"
 	"time"
 
@@ -40,15 +38,17 @@ type Target struct {
 
 type Config struct {
 	ApiGatewaySQL struct {
-		Sqlitedb  string `mapstructure:"sqlitedb" validate:"required"`
-		Auth      `mapstructure:"auth"`
-		Databases []Database `mapstructure:"databases" validate:"gt=0,required,dive"`
-		Targets   []Target   `mapstructure:"targets" validate:"gt=0,required,dive"`
+		EnableSwagger bool   `mapstructure:"enable_swagger"`
+		Sqlitedb      string `mapstructure:"sqlitedb" validate:"required"`
+		Auth          `mapstructure:"auth"`
+		Databases     []Database `mapstructure:"databases" validate:"gt=0,required,dive"`
+		Targets       []Target   `mapstructure:"targets" validate:"gt=0,required,dive"`
 	} `mapstructure:"api_gateway_sql"`
 }
 
 // setConfigDefaults used to set default configuration
 func setConfigDefaults(v *viper.Viper) {
+	v.SetDefault("api_gateway_sql.enable_swagger", true)
 	v.SetDefault("api_gateway_sql.sqlitedb", "/data/api_gateway_sql")
 	v.SetDefault("api_gateway_sql.auth.enabled", false)
 	v.SetDefault("api_gateway_sql.auth.username", "")
@@ -57,29 +57,33 @@ func setConfigDefaults(v *viper.Viper) {
 	v.SetDefault("api_gateway_sql.targets", make([]Target, 0))
 }
 
-// LoadConfig used to load configuration file
-func LoadConfig(filename string, validate *validator.Validate) (*Config, error) {
-	viper.SetConfigType("yaml")
-	viper.SetConfigFile(filename)
+// ReadConfigFile reads configuration file and return viper instance
+func ReadConfigFile(filename string) (*viper.Viper, error) {
+	var viperInstance *viper.Viper = viper.New()
 
-	if err := viper.ReadInConfig(); err != nil {
+	// Load configuration file
+	viperInstance.SetConfigType("yaml")
+	viperInstance.SetConfigFile(filename)
+
+	if err := viperInstance.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logging.Log(logging.Error, err.Error())
-			return nil, err
+			return nil, fmt.Errorf("configuration file '%s' not found", filename)
 		} else {
-			logging.Log(logging.Error, err.Error())
 			return nil, err
 		}
 	}
 
-	var viperInstance *viper.Viper = viper.GetViper()
-	// Set defaut configuration
+	return viperInstance, nil
+}
+
+// LoadConfig used to load configuration file
+func LoadConfig(viperInstance *viper.Viper, validate *validator.Validate) (*Config, error) {
+
 	setConfigDefaults(viperInstance)
 
 	// Parse configuration file to Config struct
 	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		logging.Log(logging.Error, err.Error())
+	if err := viperInstance.Unmarshal(&config); err != nil {
 		return nil, err
 	}
 
