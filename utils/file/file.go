@@ -2,10 +2,8 @@ package file
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"mime/multipart"
-	"os"
 	"strings"
 )
 
@@ -13,21 +11,6 @@ type Buffer struct {
 	StartLine int
 	EndLine   int
 	Lines     [][]string
-}
-
-func CreateConfigFileForTesting(configContent string) (string, error) {
-	configFile, err := os.CreateTemp("", "testconfig-*.yaml")
-	if err != nil {
-		return "", fmt.Errorf("unable to create temp file : %s", err.Error())
-	}
-
-	_, err = configFile.WriteString(configContent)
-	if err != nil {
-		return "", fmt.Errorf("unable to write to temp file : %s", err.Error())
-	}
-	configFile.Close()
-
-	return configFile.Name(), nil
 }
 
 func ReadCSVInBuffer(file multipart.File, bufferSize int) ([]Buffer, error) {
