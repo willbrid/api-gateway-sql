@@ -2,23 +2,44 @@ package config_test
 
 import (
 	"api-gateway-sql/config"
-	"api-gateway-sql/utils/file"
 
+	"bytes"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/spf13/viper"
 )
 
-var validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
+func triggerTest(t *testing.T, yamlConfig []byte, expectations []string, index int) {
+	v := viper.New()
+	v.SetConfigType("yaml")
 
-func TestLoadConfigFileNotFound(t *testing.T) {
+	if err := v.ReadConfig(bytes.NewBuffer([]byte(yamlConfig))); err != nil {
+		t.Fatalf("failed to read config: %v", err)
+	}
+
+	var validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
+	_, err := config.LoadConfig(v, validate)
+
+	expected := expectations[index]
+
+	if err == nil {
+		t.Errorf("no error returned, expected:\n%v", expected)
+	}
+
+	if err.Error() != expected {
+		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+	}
+}
+
+func TestReadConfigFile_ReturnFileNotFoundError(t *testing.T) {
+	t.Parallel()
+
 	var filename string
 
-	_, err := config.LoadConfig(filename, validate)
-
-	expected := "Config File \"config\" Not Found in \"[]\""
+	_, err := config.ReadConfigFile(filename)
+	expected := "configuration file '' not found"
 
 	if err == nil {
 		t.Fatalf("no error returned, expected:\n%v", expected)
@@ -29,10 +50,12 @@ func TestLoadConfigFileNotFound(t *testing.T) {
 	}
 }
 
-func TestLoadConfigFileNotExist(t *testing.T) {
+func TestReadConfigFile_ReturnFileNotExistError(t *testing.T) {
+	t.Parallel()
+
 	var filename string = "nonexistentfile.yaml"
 
-	_, err := config.LoadConfig(filename, validate)
+	_, err := config.ReadConfigFile(filename)
 
 	expected := "open nonexistentfile.yaml: no such file or directory"
 
@@ -45,40 +68,42 @@ func TestLoadConfigFileNotExist(t *testing.T) {
 	}
 }
 
-func TestAuthFieldWithAuthEnabled(t *testing.T) {
-	configSlices := []string{
-		`---
+func TestLoadConfig_ReturnErrorWithBadAuthFieldWhenAuthEnabled(t *testing.T) {
+	t.Parallel()
+
+	configSlices := [][]byte{
+		[]byte(`---
 api_gateway_sql:
   auth:
     enabled: true
     username: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   auth:
     enabled: true
     username: "x"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   auth:
     enabled: true
     username: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   auth:
     enabled: true
     username: "xxxxx"
     password: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   auth:
     enabled: true
     username: "xxxxx"
     password: xxxxxxx
-`,
+`),
 	}
 
 	expectations := []string{
@@ -89,42 +114,30 @@ api_gateway_sql:
 		"validation failed on field 'Password' for condition 'min'",
 	}
 
-	for index, configContent := range configSlices {
-		t.Run(fmt.Sprintf("LoadConfig #%v", index), func(subT *testing.T) {
-			filename, err := file.CreateConfigFileForTesting(configContent)
-			if err != nil {
-				t.Fatal(err.Error())
-			}
-			defer os.Remove(filename)
-
-			_, err = config.LoadConfig(filename, validate)
-
-			expected := expectations[index]
-
-			if err == nil {
-				t.Errorf("no error returned, expected:\n%v", expected)
-			}
-
-			if err.Error() != expected {
-				t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
-			}
+	for index, yamlConfig := range configSlices {
+		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
+			triggerTest(subT, yamlConfig, expectations, index)
 		})
 	}
 }
 
-func TestSqlitedbField(t *testing.T) {
-	configContent := `---
+func TestLoadConfig_ReturnErrorWithBadSqlitedbField(t *testing.T) {
+	t.Parallel()
+
+	yamlConfig := []byte(`---
 api_gateway_sql:
   sqlitedb: ''
-`
+`)
 
-	filename, err := file.CreateConfigFileForTesting(configContent)
-	if err != nil {
-		t.Fatal(err.Error())
+	v := viper.New()
+	v.SetConfigType("yaml")
+
+	if err := v.ReadConfig(bytes.NewBuffer([]byte(yamlConfig))); err != nil {
+		t.Fatalf("failed to read config: %v", err)
 	}
-	defer os.Remove(filename)
 
-	_, err = config.LoadConfig(filename, validate)
+	var validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
+	_, err := config.LoadConfig(v, validate)
 
 	if err == nil {
 		t.Errorf("no error returned")
@@ -135,17 +148,19 @@ api_gateway_sql:
 	}
 }
 
-func TestDabatasesField(t *testing.T) {
-	configSlices := []string{
-		`---
+func TestLoadConfig_ReturnErrorWithBadDabatasesField(t *testing.T) {
+	t.Parallel()
+
+	configSlices := [][]byte{
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
     enabled: true
     username: "xxxxx"
     password: xxxxxxxx
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -153,8 +168,8 @@ api_gateway_sql:
     username: "xxxxx"
     password: xxxxxxxx
   databases:
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -163,8 +178,8 @@ api_gateway_sql:
     password: xxxxxxxx
   databases:
   - name: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -173,8 +188,8 @@ api_gateway_sql:
     password: xxxxxxxx
   databases:
   - name: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -184,8 +199,8 @@ api_gateway_sql:
   databases:
   - name: "xxxxx"
     type: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -195,8 +210,8 @@ api_gateway_sql:
   databases:
   - name: "xxxxx"
     type: "xxxxx"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -207,8 +222,8 @@ api_gateway_sql:
   - name: "xxxxx"
     type: "mariadb"
     host: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -219,8 +234,8 @@ api_gateway_sql:
   - name: "xxxxx"
     type: "mariadb"
     host: "127.0"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -232,8 +247,8 @@ api_gateway_sql:
     type: "mariadb"
     host: "127.0.0.1"
     port: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -245,8 +260,8 @@ api_gateway_sql:
     type: "mariadb"
     host: "127.0.0.1"
     port: "1000"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -258,8 +273,8 @@ api_gateway_sql:
     type: "mariadb"
     host: "127.0.0.1"
     port: "49152"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -272,8 +287,8 @@ api_gateway_sql:
     host: "127.0.0.1"
     port: "3306"
     username: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -287,8 +302,8 @@ api_gateway_sql:
     port: "3306"
     username: "xxxxx"
     password: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -303,8 +318,8 @@ api_gateway_sql:
     username: "xxxxx"
     password: "xxxxx"
     dbname: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -319,8 +334,8 @@ api_gateway_sql:
     username: "xxxxx"
     password: "xxxxx"
     dbname: "xxxxx"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -336,7 +351,7 @@ api_gateway_sql:
     password: "xxxxx"
     dbname: "xxxxx"
     timeout: "10"
-`,
+`),
 	}
 
 	expectations := []string{
@@ -358,32 +373,18 @@ api_gateway_sql:
 		"1 error(s) decoding:\n\n* error decoding 'api_gateway_sql.databases[0].timeout': time: missing unit in duration \"10\"",
 	}
 
-	for index, configContent := range configSlices {
-		t.Run(fmt.Sprintf("LoadConfig #%v", index), func(subT *testing.T) {
-			filename, err := file.CreateConfigFileForTesting(configContent)
-			if err != nil {
-				t.Fatal(err.Error())
-			}
-			defer os.Remove(filename)
-
-			_, err = config.LoadConfig(filename, validate)
-
-			expected := expectations[index]
-
-			if err == nil {
-				t.Errorf("no error returned, expected:\n%v", expected)
-			}
-
-			if err.Error() != expected {
-				t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
-			}
+	for index, yamlConfig := range configSlices {
+		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
+			triggerTest(subT, yamlConfig, expectations, index)
 		})
 	}
 }
 
-func TestTargetsField(t *testing.T) {
-	configSlices := []string{
-		`---
+func TestLoadConfig_ReturnErrorWithBadTargetsField(t *testing.T) {
+	t.Parallel()
+
+	configSlices := [][]byte{
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -400,8 +401,8 @@ api_gateway_sql:
     dbname: "xxxxx"
     sslmode: false
     timeout: "10s"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -419,8 +420,8 @@ api_gateway_sql:
     sslmode: false
     timeout: "10s"
   targets:
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -439,8 +440,8 @@ api_gateway_sql:
     timeout: "10s"
   targets:
   - name: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -459,8 +460,8 @@ api_gateway_sql:
     timeout: "10s"
   targets:
   - name: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -480,8 +481,8 @@ api_gateway_sql:
   targets:
   - name: "xxxxx"
     data_source_name: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -502,8 +503,8 @@ api_gateway_sql:
   - name: "xxxxx"
     data_source_name: "xxxxx"
     sql: ""
-`,
-		`---
+`),
+		[]byte(`---
 api_gateway_sql:
   sqlitedb: "/data/api_gateway_sql"
   auth:
@@ -525,7 +526,7 @@ api_gateway_sql:
     data_source_name: "xxxxx"
     sql: "select * from student"
     Multi: true
-`,
+`),
 	}
 
 	expectations := []string{
@@ -538,25 +539,9 @@ api_gateway_sql:
 		"validation failed on field 'BatchSize' for condition 'required_if'",
 	}
 
-	for index, configContent := range configSlices {
-		t.Run(fmt.Sprintf("LoadConfig #%v", index), func(subT *testing.T) {
-			filename, err := file.CreateConfigFileForTesting(configContent)
-			if err != nil {
-				t.Fatal(err.Error())
-			}
-			defer os.Remove(filename)
-
-			_, err = config.LoadConfig(filename, validate)
-
-			expected := expectations[index]
-
-			if err == nil {
-				t.Errorf("no error returned, expected:\n%v", expected)
-			}
-
-			if err.Error() != expected {
-				t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
-			}
+	for index, yamlConfig := range configSlices {
+		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
+			triggerTest(subT, yamlConfig, expectations, index)
 		})
 	}
 }
