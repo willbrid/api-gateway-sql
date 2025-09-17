@@ -3,18 +3,15 @@ package external
 import (
 	"api-gateway-sql/config"
 
-	"context"
 	"fmt"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type PostgresExecutor struct {
-	db *gorm.DB
-}
+type PostgresDatabase struct{}
 
-func NewPostgresExecutor(db config.Database) (*PostgresExecutor, error) {
+func (_ *PostgresDatabase) Connect(db config.Database) (*gorm.DB, error) {
 	sslMode := "disable"
 	if db.Sslmode {
 		sslMode = "enable"
@@ -27,9 +24,5 @@ func NewPostgresExecutor(db config.Database) (*PostgresExecutor, error) {
 		return nil, err
 	}
 
-	return &PostgresExecutor{db: cnx}, nil
-}
-
-func (e *PostgresExecutor) Execute(ctx context.Context, query string, params map[string]any) (*ExecutionResult, error) {
-	return executeQuery(ctx, e.db, query, params)
+	return cnx, nil
 }

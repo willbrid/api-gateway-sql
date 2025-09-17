@@ -2,23 +2,50 @@ package external
 
 import (
 	"api-gateway-sql/config"
+
+	"errors"
+
+	"gorm.io/gorm"
 )
 
-func NewExecutor(db config.Database) (QueryExecutor, error) {
+const (
+	mariadbType   string = "mariadb"
+	mysqlType     string = "mysql"
+	postgresType  string = "postgres"
+	sqlserverType string = "sqlserver"
+	sqliteType    string = "sqlite"
+)
+
+var (
+	errUnknownDatabaseType error = errors.New("unknown database type")
+)
+
+type IDatabase interface {
+	Connect(dbConfig config.Database) (*gorm.DB, error)
+}
+
+func NewDatabase(db config.Database) (*gorm.DB, error) {
+	var dbInstance IDatabase
 	dbType := db.Type
 
 	switch dbType {
-	case "mariadb":
-		return NewMariadbExecutor(db)
-	case "mysql":
-		return NewMySQLExecutor(db)
-	case "postgres":
-		return NewPostgresExecutor(db)
-	case "sqlserver":
-		return NewSQLServerExecutor(db)
-	case "sqlite":
-		return NewSqliteExecutor(db)
+	case mariadbType:
+		dbInstance = &MariadbDatabase{}
+	case mysqlType:
+		dbInstance = &MySQLDatabase{}
+	case postgresType:
+		dbInstance = &PostgresDatabase{}
+	case sqlserverType:
+		dbInstance = &SqliteDatabase{}
+	case sqliteType:
+		dbInstance = &SQLServerDatabase{}
 	default:
-		return nil, nil
+		dbInstance = nil
 	}
+
+	if dbInstance == nil {
+		return nil, errUnknownDatabaseType
+	}
+
+	return dbInstance.Connect(db)
 }
