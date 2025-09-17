@@ -6,7 +6,7 @@ type SQLQueryOutput struct {
 	DurationMs   int64
 }
 
-type SQLQuery struct {
+type SQLQueryInput struct {
 	targetName string
 	postParams map[string]any
 }
