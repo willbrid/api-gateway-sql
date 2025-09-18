@@ -7,6 +7,6 @@ type SQLQueryOutput struct {
 }
 
 type SQLQueryInput struct {
-	targetName string
-	postParams map[string]any
+	TargetName string
+	PostParams map[string]any
 }
