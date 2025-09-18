@@ -370,7 +370,7 @@ api_gateway_sql:
 		"validation failed on field 'Password' for condition 'required_unless'",
 		"validation failed on field 'Dbname' for condition 'required'",
 		"validation failed on field 'Timeout' for condition 'required'",
-		"1 error(s) decoding:\n\n* error decoding 'api_gateway_sql.databases[0].timeout': time: missing unit in duration \"10\"",
+		"decoding failed due to the following error(s):\n\n'api_gateway_sql.databases[0].timeout' time: missing unit in duration",
 	}
 
 	for index, yamlConfig := range configSlices {
