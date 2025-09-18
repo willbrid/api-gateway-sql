@@ -15,7 +15,9 @@ changelog:
 release:
   prerelease: auto
 builds:
-  - env: 
+  - id: api_gateway_sql
+    dir: cmd
+    env: 
     - CGO_ENABLED=1
     - GO111MODULE=on
     goos:
