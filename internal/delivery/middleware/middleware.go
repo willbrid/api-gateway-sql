@@ -13,7 +13,7 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		var auth string = req.Header.Get("Authorization")
 
-		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") {
+		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
 				logger.LogError("no authorization header found")
 				http.Error(resp, "invalid credential", http.StatusUnauthorized)
