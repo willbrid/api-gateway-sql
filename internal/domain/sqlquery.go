@@ -10,3 +10,8 @@ type SQLQueryInput struct {
 	TargetName string
 	PostParams map[string]any
 }
+
+type SQLInitDatabaseInput struct {
+	Datasource     string
+	SQLFileContent string
+}
