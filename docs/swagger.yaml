@@ -20,6 +20,42 @@ info:
     url: https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE
   title: API GATEWAY SQL
 paths:
+  /api-gateway-sql/{datasource}/init:
+    post:
+      consumes:
+      - application/json
+      description: Initialize Database by providing a sql query file
+      parameters:
+      - description: Datasource Name
+        in: path
+        name: datasource
+        required: true
+        type: string
+      - description: SQL Data to upload
+        in: formData
+        name: sqlfile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Initialize Database
+      tags:
+      - apisql
   /api-gateway-sql/{target}:
     get:
       consumes:
