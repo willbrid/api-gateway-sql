@@ -32,7 +32,7 @@ func LoadConfigFlag(validate *validator.Validate) (*ConfigFlag, error) {
 	flag.StringVar(&certFile, "cert-file", "fixtures/tls/server.crt", "certificat file path")
 	flag.StringVar(&keyFile, "key-file", "fixtures/tls/server.key", "private key file path")
 	flag.StringVar(&enableHttps, "enable-https", "false", "configuration to enable https")
-	flag.IntVar(&listenPort, "port", 5957, "listening port")
+	flag.IntVar(&listenPort, "port", 5297, "listening port")
 	flag.Parse()
 
 	boolEnableHttps, err := strconv.ParseBool(enableHttps)
