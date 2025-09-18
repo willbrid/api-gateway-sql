@@ -6,9 +6,11 @@ import (
 	"api-gateway-sql/internal/delivery/middleware"
 	"api-gateway-sql/internal/usecase"
 
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type Handler struct {
@@ -19,10 +21,22 @@ func NewHandler(usercases *usecase.Usecases) *Handler {
 	return &Handler{usercases}
 }
 
-func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config) {
+func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *config.ConfigFlag) {
 	router.Use(func(subH http.Handler) http.Handler {
 		return middleware.AuthMiddleware(subH, cfg)
 	})
+
+	if cfg.ApiGatewaySQL.EnableSwagger {
+		scheme := map[bool]string{true: "https", false: "http"}[cfgflag.EnableHttps]
+		swaggerUrl := fmt.Sprintf("%s://localhost:%d/swagger/doc.json", scheme, cfgflag.ListenPort)
+
+		router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+			httpSwagger.URL(swaggerUrl),
+			httpSwagger.DeepLinking(true),
+			httpSwagger.DocExpansion("none"),
+			httpSwagger.DomID("swagger-ui"),
+		)).Methods("GET")
+	}
 
 	httphandler := httphandler.NewHTTPHandler(h.Usercases, cfg)
 

@@ -10,123 +10,10 @@
         "license": {
             "name": "MIT",
             "url": "https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE"
-        },
-        "version": "0.0.2"
+        }
     },
-    "basePath": "/v1",
+    "basePath": "/",
     "paths": {
-        "/api-gateway-sql/stats": {
-            "get": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Get all batch statistics",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "apisql"
-                ],
-                "summary": "Get statistics",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page_num",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "description": "Page size",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/api-gateway-sql/{datasource}/init": {
-            "post": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Initialize Database by providing a sql query file",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "apisql"
-                ],
-                "summary": "Initialize Database",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Datasource Name",
-                        "name": "datasource",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "SQL Data to upload",
-                        "name": "sqlfile",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    }
-                }
-            }
-        },
         "/api-gateway-sql/{target}": {
             "get": {
                 "security": [
@@ -158,19 +45,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     }
                 }
@@ -215,32 +102,27 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     }
                 }
             }
         },
-        "/api-gateway-sql/{target}/batch": {
-            "post": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Execute batch sql query with values from a csv file",
+        "/healthz": {
+            "get": {
+                "description": "Trigger SQL query without params",
                 "consumes": [
                     "application/json"
                 ],
@@ -250,40 +132,12 @@
                 "tags": [
                     "apisql"
                 ],
-                "summary": "Execute batch sql query",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Target Name",
-                        "name": "target",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "CSV Data to import",
-                        "name": "csvfile",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
+                "summary": "Health check for application",
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.HTTPResp"
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
                         }
                     }
                 }
@@ -291,7 +145,7 @@
         }
     },
     "definitions": {
-        "httputil.HTTPResp": {
+        "httpresponse.HTTPResp": {
             "type": "object",
             "properties": {
                 "code": {

@@ -27,7 +27,7 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 		cfgflag.CertFile,
 		cfgflag.KeyFile,
 	)
-	handlers.InitRouter(httpServer.Router, cfgfile)
+	handlers.InitRouter(httpServer.Router, cfgfile, cfgflag)
 	httpServer.Start()
 
 	var logInfoServer string

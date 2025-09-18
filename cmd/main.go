@@ -2,12 +2,21 @@ package main
 
 import (
 	"api-gateway-sql/config"
+	_ "api-gateway-sql/docs"
 	"api-gateway-sql/internal/app"
 	"api-gateway-sql/pkg/logger"
 
 	"github.com/go-playground/validator/v10"
 )
 
+// @title API GATEWAY SQL
+// @description API used for executing SQL QUERY
+// @contact.name API Support
+// @contact.email ngaswilly77@gmail.com
+// @license.name MIT
+// @license.url https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE
+// @BasePath /
+// @securityDefinitions.basic BasicAuth
 func main() {
 	var validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
 

@@ -1,6 +1,6 @@
-basePath: /v1
+basePath: /
 definitions:
-  httputil.HTTPResp:
+  httpresponse.HTTPResp:
     properties:
       code:
         example: 200
@@ -19,44 +19,7 @@ info:
     name: MIT
     url: https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE
   title: API GATEWAY SQL
-  version: 0.0.2
 paths:
-  /api-gateway-sql/{datasource}/init:
-    post:
-      consumes:
-      - application/json
-      description: Initialize Database by providing a sql query file
-      parameters:
-      - description: Datasource Name
-        in: path
-        name: datasource
-        required: true
-        type: string
-      - description: SQL Data to upload
-        in: formData
-        name: sqlfile
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-      security:
-      - BasicAuth: []
-      summary: Initialize Database
-      tags:
-      - apisql
   /api-gateway-sql/{target}:
     get:
       consumes:
@@ -74,15 +37,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
       security:
       - BasicAuth: []
       summary: Get SQL Query result
@@ -111,90 +74,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
+            $ref: '#/definitions/httpresponse.HTTPResp'
       security:
       - BasicAuth: []
       summary: Get SQL Query result
       tags:
       - apisql
-  /api-gateway-sql/{target}/batch:
-    post:
-      consumes:
-      - application/json
-      description: Execute batch sql query with values from a csv file
-      parameters:
-      - description: Target Name
-        in: path
-        name: target
-        required: true
-        type: string
-      - description: CSV Data to import
-        in: formData
-        name: csvfile
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-      security:
-      - BasicAuth: []
-      summary: Execute batch sql query
-      tags:
-      - apisql
-  /api-gateway-sql/stats:
+  /healthz:
     get:
       consumes:
       - application/json
-      description: Get all batch statistics
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page_num
-        type: integer
-      - default: 20
-        description: Page size
-        in: query
-        name: page_size
-        type: integer
+      description: Trigger SQL query without params
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httputil.HTTPResp'
-      security:
-      - BasicAuth: []
-      summary: Get statistics
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      summary: Health check for application
       tags:
       - apisql
 securityDefinitions:
