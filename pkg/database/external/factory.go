@@ -35,9 +35,9 @@ func NewDatabase(db config.Database) (*gorm.DB, error) {
 		dbInstance = &MySQLDatabase{}
 	case postgresType:
 		dbInstance = &PostgresDatabase{}
-	case sqlserverType:
-		dbInstance = &SqliteDatabase{}
 	case sqliteType:
+		dbInstance = &SqliteDatabase{}
+	case sqlserverType:
 		dbInstance = &SQLServerDatabase{}
 	default:
 		dbInstance = nil
