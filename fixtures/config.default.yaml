@@ -18,6 +18,10 @@ api_gateway_sql:
     data_source_name: school
     multi: false
     sql: "select * from student where id = {{id}}"
+  - name: update-one-student
+    data_source_name: school
+    multi: false
+    sql: "update student set name = 'bob2' where id = {{id}}"
   - name: find-student-with-cond
     data_source_name: school
     multi: false
