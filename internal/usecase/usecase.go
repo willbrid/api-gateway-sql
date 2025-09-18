@@ -4,10 +4,12 @@ import (
 	"api-gateway-sql/config"
 	"api-gateway-sql/internal/domain"
 	"api-gateway-sql/internal/repository"
+
+	"context"
 )
 
 type ISQLQueryUsecase interface {
-	ExecuteSingle(sqlquery domain.SQLQueryInput) (*domain.SQLQueryOutput, error)
+	ExecuteSingle(ctx context.Context, sqlquery *domain.SQLQueryInput) (*domain.SQLQueryOutput, error)
 }
 
 type Usecases struct {
