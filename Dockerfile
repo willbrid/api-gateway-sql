@@ -1,4 +1,4 @@
-FROM golang:1.21 AS builder
+FROM golang:1.24 AS builder
 
 RUN apt-get update && apt-get install -y gcc sqlite3 libsqlite3-dev
 
@@ -8,7 +8,7 @@ COPY . .
 
 RUN go mod download
 
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o api-gateway-sql .
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o api-gateway-sql ./cmd
 
 FROM debian:bookworm-slim
 
