@@ -6,7 +6,7 @@ import (
 )
 
 // GetTargetAndDatabase used to get target and his database
-func GetTargetAndDatabase(config config.Config, targetName string) (*config.Target, *config.Database, error) {
+func GetTargetAndDatabase(config *config.Config, targetName string) (*config.Target, *config.Database, error) {
 	target, exist := config.GetTargetByName(targetName)
 	if !exist {
 		return nil, nil, fmt.Errorf("the specified target name %s does not exist", targetName)
