@@ -12,8 +12,13 @@ type ISQLQueryUsecase interface {
 	ExecuteSingle(ctx context.Context, sqlquery *domain.SQLQueryInput) (*domain.SQLQueryOutput, error)
 }
 
+type ISQLInitDatabaseUsecase interface {
+	ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error
+}
+
 type Usecases struct {
-	ISQLQueryUsecase ISQLQueryUsecase
+	ISQLQueryUsecase        ISQLQueryUsecase
+	ISQLInitDatabaseUsecase ISQLInitDatabaseUsecase
 }
 
 type Deps struct {
@@ -22,8 +27,10 @@ type Deps struct {
 
 func NewUsecases(deps Deps, config *config.Config) *Usecases {
 	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), config)
+	sqlInitDatabaseUsecase := NewSQLInitDatabaseUsecase(deps.Repos.ISQLInitDatabaseRepo.(*repository.SQLInitDatabaseRepo), config)
 
 	return &Usecases{
-		ISQLQueryUsecase: sqlQueryUsecase,
+		ISQLQueryUsecase:        sqlQueryUsecase,
+		ISQLInitDatabaseUsecase: sqlInitDatabaseUsecase,
 	}
 }
