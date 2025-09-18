@@ -43,4 +43,5 @@ func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *co
 	router.HandleFunc("/healthz", httphandler.HandleHealthCheck).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/{target}", httphandler.ApiGetSqlHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/{target}", httphandler.ApiPostSqlHandler).Methods("POST")
+	router.HandleFunc("/api-gateway-sql/{datasource}/init", httphandler.ApiPostInitDatabase).Methods("POST")
 }

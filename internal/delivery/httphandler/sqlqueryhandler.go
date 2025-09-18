@@ -7,14 +7,17 @@ import (
 	"encoding/json"
 
 	"context"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 const (
-	successAPIMessage string = "operation completed successfully"
-	failedAPIMessage  string = "Operation ended in failure"
+	successAPIMessage              string = "operation completed successfully"
+	failedAPIMessage               string = "operation ended in failure"
+	errUnableToReadSQLFile         string = "unable to read the sql file content"
+	errUnableToExecuteInitSqlQuery string = "unable to execute the init sql query"
 )
 
 // HandleHealthCheck godoc
@@ -104,4 +107,52 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 	}
 
 	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, sqlqueryOutput)
+}
+
+// ApiPostInitDatabase godoc
+// @Summary      Initialize Database
+// @Description  Initialize Database by providing a sql query file
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        datasource  path  string  true  "Datasource Name"
+// @Param        sqlfile  formData  file  true  "SQL Data to upload"
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      400  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/{datasource}/init [post]
+func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars           map[string]string = mux.Vars(req)
+		datasourceName string            = vars["datasource"]
+		ctx            context.Context   = req.Context()
+	)
+
+	file, _, err := req.FormFile("sqlfile")
+	if err != nil {
+		logger.LogError("error: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
+		return
+	}
+
+	sqlBytes, err := io.ReadAll(file)
+	if err != nil {
+		logger.LogError("error: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
+		return
+	}
+
+	sqlInitDatabaseInput := &domain.SQLInitDatabaseInput{
+		Datasource:     datasourceName,
+		SQLFileContent: string(sqlBytes),
+	}
+
+	if err := h.Usercases.ISQLInitDatabaseUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
+		logger.LogError("error: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
+		return
+	}
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, nil)
 }
