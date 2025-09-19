@@ -5,6 +5,7 @@ import (
 	"api-gateway-sql/internal/delivery"
 	"api-gateway-sql/internal/repository"
 	"api-gateway-sql/internal/usecase"
+	"api-gateway-sql/pkg/database"
 	"api-gateway-sql/pkg/httpserver"
 	"api-gateway-sql/pkg/logger"
 
@@ -15,6 +16,9 @@ import (
 )
 
 func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
+	sqliteAppDatabase := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
+	MigrateAppDatabase(sqliteAppDatabase.Db)
+
 	repos := repository.NewRepositories()
 	usecases := usecase.NewUsecases(usecase.Deps{
 		Repos: repos,
