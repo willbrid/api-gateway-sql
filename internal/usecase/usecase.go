@@ -22,12 +22,13 @@ type Usecases struct {
 }
 
 type Deps struct {
-	Repos *repository.Repositories
+	Repos  *repository.Repositories
+	Config *config.Config
 }
 
-func NewUsecases(deps Deps, config *config.Config) *Usecases {
-	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), config)
-	sqlInitDatabaseUsecase := NewSQLInitDatabaseUsecase(deps.Repos.ISQLInitDatabaseRepo.(*repository.SQLInitDatabaseRepo), config)
+func NewUsecases(deps Deps) *Usecases {
+	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), deps.Config)
+	sqlInitDatabaseUsecase := NewSQLInitDatabaseUsecase(deps.Repos.ISQLInitDatabaseRepo.(*repository.SQLInitDatabaseRepo), deps.Config)
 
 	return &Usecases{
 		ISQLQueryUsecase:        sqlQueryUsecase,

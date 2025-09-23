@@ -19,10 +19,11 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 	sqliteAppDatabase := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
 	MigrateAppDatabase(sqliteAppDatabase.Db)
 
-	repos := repository.NewRepositories()
+	repos := repository.NewRepositories(sqliteAppDatabase.Db)
 	usecases := usecase.NewUsecases(usecase.Deps{
-		Repos: repos,
-	}, cfgfile)
+		Repos:  repos,
+		Config: cfgfile,
+	})
 
 	handlers := delivery.NewHandler(usecases)
 	httpServer := httpserver.NewServer(
