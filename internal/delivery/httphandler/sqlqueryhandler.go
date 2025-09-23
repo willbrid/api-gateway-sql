@@ -59,7 +59,7 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -89,7 +89,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	var postParams map[string]any
 	if err := json.NewDecoder(req.Body).Decode(&postParams); err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -101,7 +101,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -131,14 +131,14 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 
 	file, _, err := req.FormFile("sqlfile")
 	if err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
 
 	sqlBytes, err := io.ReadAll(file)
 	if err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
@@ -149,7 +149,7 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 	}
 
 	if err := h.Usercases.ISQLInitDatabaseUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
-		logger.LogError("error: %s", err.Error())
+		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
 		return
 	}

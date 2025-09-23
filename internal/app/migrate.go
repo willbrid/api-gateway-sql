@@ -10,6 +10,6 @@ import (
 func MigrateAppDatabase(db *gorm.DB) {
 	err := db.AutoMigrate(&domain.BatchStat{}, &domain.Block{}, &domain.FailureRange{})
 	if err != nil {
-		logger.LogError("error during migrations: %s", err.Error())
+		logger.Error("error during migrations: %s", err.Error())
 	}
 }

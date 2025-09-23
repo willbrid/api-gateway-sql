@@ -42,18 +42,18 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 		logInfoServer = "app server is listening on port %v using http"
 	}
 
-	logger.LogInfo(logInfoServer, cfgflag.ListenPort)
+	logger.Info(logInfoServer, cfgflag.ListenPort)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		logger.LogInfo("app server - run - signal: %s", s.String())
+		logger.Info("app server - run - signal: %s", s.String())
 	case err := <-httpServer.Notify():
-		logger.LogError("app server error: %v", err.Error())
+		logger.Error("app server error: %v", err.Error())
 	}
 
 	if err := httpServer.Stop(); err != nil {
-		logger.LogError("app server - stop - error: %v", err)
+		logger.Error("app server - stop - error: %v", err)
 	}
 }

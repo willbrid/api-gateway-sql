@@ -12,19 +12,19 @@ import (
 type LogLevel int
 
 const (
-	Info LogLevel = iota
-	Warning
-	Error
-	Fatal
+	INFO LogLevel = iota
+	WARNING
+	ERROR
+	FATAL
 )
 
 const DefaultCallerDepth = 2
 
 var logLevels = map[LogLevel]string{
-	Info:    "INFO",
-	Warning: "WARNING",
-	Error:   "ERROR",
-	Fatal:   "FATAL",
+	INFO:    "INFO",
+	WARNING: "WARNING",
+	ERROR:   "ERROR",
+	FATAL:   "FATAL",
 }
 
 func msg(level LogLevel, message string, args ...any) {
@@ -45,20 +45,20 @@ func msg(level LogLevel, message string, args ...any) {
 	log.Printf("[%s][%s][%s:%d] : %s", datetime, logLevel, filename, line, fmt.Sprintf(message, args...))
 }
 
-func LogInfo(message string, args ...any) {
-	msg(Info, message, args...)
+func Info(message string, args ...any) {
+	msg(INFO, message, args...)
 }
 
-func LogWarn(message string, args ...any) {
-	msg(Warning, message, args...)
+func Warn(message string, args ...any) {
+	msg(WARNING, message, args...)
 }
 
-func LogError(message string, args ...any) {
-	msg(Error, message, args...)
+func Error(message string, args ...any) {
+	msg(ERROR, message, args...)
 }
 
-func LogFatal(message string, args ...any) {
-	msg(Fatal, message, args...)
+func Fatal(message string, args ...any) {
+	msg(FATAL, message, args...)
 
 	os.Exit(1)
 }
