@@ -11,14 +11,14 @@ type SqliteAppDatabase struct {
 	Db *gorm.DB
 }
 
-func NewSqliteAppDatabase(sqlitedb string) *SqliteAppDatabase {
+func NewSqliteAppDatabase(sqlitedb string) (*SqliteAppDatabase, error) {
 	dsn := fmt.Sprintf("/data/%s.db", sqlitedb)
 
 	cnx, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return &SqliteAppDatabase{Db: cnx}
+	return &SqliteAppDatabase{Db: cnx}, nil
 }

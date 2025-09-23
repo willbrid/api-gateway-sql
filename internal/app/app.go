@@ -16,7 +16,11 @@ import (
 )
 
 func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
-	sqliteAppDatabase := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
+	sqliteAppDatabase, err := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
+	if err != nil {
+		logger.Error("app server database error: %v", err.Error())
+		return
+	}
 	MigrateAppDatabase(sqliteAppDatabase.Db)
 
 	repos := repository.NewRepositories(sqliteAppDatabase.Db)
@@ -51,6 +55,10 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 		logger.Info("app server - run - signal: %s", s.String())
 	case err := <-httpServer.Notify():
 		logger.Error("app server error: %v", err.Error())
+	}
+
+	if appDbCnx, err := sqliteAppDatabase.Db.DB(); err == nil {
+		appDbCnx.Close()
 	}
 
 	if err := httpServer.Stop(); err != nil {
