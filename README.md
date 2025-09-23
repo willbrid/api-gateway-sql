@@ -14,7 +14,7 @@ L'application permet de configurer une authentification de type **basic** pour s
 
 - **Exécution de requêtes SQL via un fichier sql (POST)**
 
-L'application permet d'exécuter des requêtes SQL définies dans un fichier sql.
+L'application permet d'exécuter des requêtes SQL définies dans un fichier sql. Utile dans le cas de l'initialisation du schéma d'une base de données.
 
 - **Exécution de requêtes SQL sans paramètres (GET)**
 
