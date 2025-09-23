@@ -14,11 +14,11 @@ import (
 )
 
 type Handler struct {
-	Usercases *usecase.Usecases
+	Usecases *usecase.Usecases
 }
 
-func NewHandler(usercases *usecase.Usecases) *Handler {
-	return &Handler{usercases}
+func NewHandler(usecases *usecase.Usecases) *Handler {
+	return &Handler{usecases}
 }
 
 func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *config.ConfigFlag) {
@@ -38,7 +38,7 @@ func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *co
 		)).Methods("GET")
 	}
 
-	httphandler := httphandler.NewHTTPHandler(h.Usercases, cfg)
+	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg)
 
 	router.HandleFunc("/healthz", httphandler.HandleHealthCheck).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/{target}", httphandler.ApiGetSqlHandler).Methods("GET")
