@@ -17,7 +17,7 @@ type ISQLInitDatabaseRepo interface {
 }
 
 type IBatchStat interface {
-	Create(ctx context.Context, targetName string) (string, error)
+	Create(ctx context.Context, targetName string) (*domain.BatchStat, error)
 	UpdateLastCompleted(ctx context.Context, batchStat *domain.BatchStat) error
 	AddBlockToBatchStat(ctx context.Context, bs *domain.BatchStat, block *domain.Block) (*domain.Block, error)
 	FindAll(ctx context.Context, offset, limit int) ([]*domain.BatchStat, int64, error)

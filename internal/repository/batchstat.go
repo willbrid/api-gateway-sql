@@ -17,7 +17,7 @@ func NewBatchStatRepo(appDb *gorm.DB) *BatchStatRepo {
 	return &BatchStatRepo{appDb}
 }
 
-func (d *BatchStatRepo) Create(ctx context.Context, targetName string) (string, error) {
+func (d *BatchStatRepo) Create(ctx context.Context, targetName string) (*domain.BatchStat, error) {
 	uid := uuid.GenerateUID()
 
 	batchStat := domain.BatchStat{
@@ -26,9 +26,11 @@ func (d *BatchStatRepo) Create(ctx context.Context, targetName string) (string, 
 		Completed:  false,
 	}
 
-	err := d.appDb.WithContext(ctx).Create(&batchStat).Error
+	if err := d.appDb.WithContext(ctx).Create(&batchStat).Error; err != nil {
+		return nil, err
+	}
 
-	return uid, err
+	return &batchStat, nil
 }
 
 func (d *BatchStatRepo) UpdateLastCompleted(ctx context.Context, batchStat *domain.BatchStat) error {
