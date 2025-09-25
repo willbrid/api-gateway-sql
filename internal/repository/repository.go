@@ -10,6 +10,7 @@ import (
 
 type ISQLQueryRepo interface {
 	Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error)
+	ExecuteBatch(ctx context.Context, query string, params []map[string]any) error
 }
 
 type ISQLInitDatabaseRepo interface {

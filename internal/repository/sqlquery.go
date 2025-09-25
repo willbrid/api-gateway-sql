@@ -47,3 +47,18 @@ func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[str
 		DurationMs:   time.Since(start).Milliseconds(),
 	}, nil
 }
+
+func (r *SQLQueryRepo) ExecuteBatch(ctx context.Context, query string, params []map[string]any) error {
+	cnx := r.db
+
+	return cnx.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, param := range params {
+			parsedQuery, parsedParams := sqlqueryhelper.TransformQuery(query, param)
+			if err := tx.Exec(parsedQuery, parsedParams...).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
