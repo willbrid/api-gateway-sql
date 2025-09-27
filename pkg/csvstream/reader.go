@@ -52,9 +52,6 @@ func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error
 			blockChannel <- block
 			numLine++
 		}
-
-		close(blockChannel)
-		close(errorChannel)
 	}()
 
 	return blockChannel, errorChannel
