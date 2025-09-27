@@ -60,7 +60,7 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to decode post params: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -90,7 +90,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	var postParams map[string]any
 	if err := json.NewDecoder(req.Body).Decode(&postParams); err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to decode post params: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -102,7 +102,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to execute single sql query: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -132,14 +132,14 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 
 	file, _, err := req.FormFile("sqlfile")
 	if err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to read sql file: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
 
 	sqlBytes, err := io.ReadAll(file)
 	if err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to read sql file: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
@@ -180,7 +180,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 
 	csvfile, _, err := req.FormFile("csvfile")
 	if err != nil {
-		logger.Error("error: %s", err.Error())
+		logger.Error("failed to read csv file: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
 		return
 	}
@@ -192,7 +192,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 
 	go func() {
 		if err := h.Usercases.ISQLBatchQueryUsecase.ExecuteBatch(ctx, sqlBatchQueryInput); err != nil {
-			logger.Error("error: %s", err.Error())
+			logger.Error("failed to process batch: %s", err.Error())
 		}
 	}()
 
