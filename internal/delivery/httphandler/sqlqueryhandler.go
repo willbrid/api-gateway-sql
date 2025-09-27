@@ -175,7 +175,6 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 	var (
 		vars       map[string]string = mux.Vars(req)
 		targetName string            = vars["target"]
-		ctx        context.Context   = req.Context()
 	)
 
 	csvfile, _, err := req.FormFile("csvfile")
@@ -191,6 +190,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 	}
 
 	go func() {
+		ctx := context.Background()
 		if err := h.Usercases.ISQLBatchQueryUsecase.ExecuteBatch(ctx, sqlBatchQueryInput); err != nil {
 			logger.Error("failed to process batch: %s", err.Error())
 		}
