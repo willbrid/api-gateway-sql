@@ -124,6 +124,42 @@ paths:
       summary: Get SQL Query result
       tags:
       - apisql
+  /api-gateway-sql/{target}/batch:
+    post:
+      consumes:
+      - application/json
+      description: Execute batch sql query with values from a csv file
+      parameters:
+      - description: Target Name
+        in: path
+        name: target
+        required: true
+        type: string
+      - description: CSV Data to import
+        in: formData
+        name: csvfile
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Execute batch sql query
+      tags:
+      - apisql
   /healthz:
     get:
       consumes:
