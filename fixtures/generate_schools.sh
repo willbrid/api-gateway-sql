@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  echo "Erreur: Aucun argument fourni."
-  echo "Usage: $0 <entier>"
+  echo "Erreur: Argument 1 non fourni."
+  echo "Usage: $0 <size> <outputfile>"
   exit 1
 fi
 
@@ -11,8 +11,14 @@ if ! [[ "$1" =~ ^[1-9][0-9]*$ ]]; then
   exit 1
 fi
 
+if [ -z "$2" ]; then
+  echo "Erreur: Argument 2 non fourni."
+  echo "Usage: $0 <size> <outputfile>"
+  exit 1
+fi
+
 # Fichier de sortie
-output_file="/tmp/schools.csv"
+output_file="$2"
 size=$1
 
 # Générer des noms aléatoires
