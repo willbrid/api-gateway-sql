@@ -4,9 +4,9 @@ import (
 	"api-gateway-sql/internal/domain"
 	"api-gateway-sql/pkg/httpresponse"
 	"api-gateway-sql/pkg/logger"
-	"encoding/json"
 
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -17,6 +17,7 @@ const (
 	successAPIMessage              string = "operation completed successfully"
 	failedAPIMessage               string = "operation ended in failure"
 	errUnableToReadSQLFile         string = "unable to read the sql file content"
+	errUnableToReadCSVFile         string = "unable to read the csv file content"
 	errUnableToExecuteInitSqlQuery string = "unable to execute the init sql query"
 )
 
@@ -155,4 +156,45 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 	}
 
 	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, nil)
+}
+
+// ApiPostSqlBatchHandler godoc
+// @Summary      Execute batch sql query
+// @Description  Execute batch sql query with values from a csv file
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        target path  string  true  "Target Name"
+// @Param        csvfile  formData  file  true  "CSV Data to import"
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      400  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/{target}/batch [post]
+func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars       map[string]string = mux.Vars(req)
+		targetName string            = vars["target"]
+		ctx        context.Context   = req.Context()
+	)
+
+	csvfile, _, err := req.FormFile("csvfile")
+	if err != nil {
+		logger.Error("error: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
+		return
+	}
+
+	sqlBatchQueryInput := &domain.SQLBatchQueryInput{
+		TargetName: targetName,
+		File:       csvfile,
+	}
+
+	go func() {
+		if err := h.Usercases.ISQLBatchQueryUsecase.ExecuteBatch(ctx, sqlBatchQueryInput); err != nil {
+			logger.Error("error: %s", err.Error())
+		}
+	}()
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
 }
