@@ -1,6 +1,17 @@
 package domain
 
-import "api-gateway-sql/pkg/uuid"
+import (
+	"api-gateway-sql/config"
+	"api-gateway-sql/pkg/csvstream"
+	"api-gateway-sql/pkg/uuid"
+)
+
+type BlockDataInput struct {
+	BSInput *BatchStat
+	BLInput *csvstream.Block
+	TGInput *config.Target
+	DBInput *config.Database
+}
 
 type Block struct {
 	ID            string         `json:"id" gorm:"primaryKey"`
