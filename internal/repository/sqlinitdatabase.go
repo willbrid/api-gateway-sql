@@ -19,6 +19,12 @@ func (i *SQLInitDatabaseRepo) SetDB(db *gorm.DB) {
 	i.db = db
 }
 
+func (i *SQLInitDatabaseRepo) CloseDB() {
+	if cnx, err := i.db.DB(); err == nil {
+		cnx.Close()
+	}
+}
+
 func (i *SQLInitDatabaseRepo) ExecuteInit(ctx context.Context, sqlQueries []string) error {
 	return i.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for _, sqlQuery := range sqlQueries {
