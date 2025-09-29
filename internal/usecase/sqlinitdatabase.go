@@ -5,11 +5,10 @@ import (
 	"api-gateway-sql/internal/domain"
 	"api-gateway-sql/internal/repository"
 	"api-gateway-sql/pkg/database/external"
-	"strings"
-
-	"errors"
 
 	"context"
+	"errors"
+	"strings"
 )
 
 var (
@@ -35,12 +34,9 @@ func (sid *SQLInitDatabaseUsecase) ExecuteInit(ctx context.Context, sqlinit *dom
 	if err != nil {
 		return err
 	}
-	defer func() {
-		dbCnx, _ := cnx.DB()
-		dbCnx.Close()
-	}()
 
 	sid.repo.SetDB(cnx)
+	defer sid.repo.CloseDB()
 
 	queries := strings.Split(sqlinit.SQLFileContent, ";")
 

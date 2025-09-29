@@ -29,12 +29,9 @@ func (squ *SQLQueryUsecase) ExecuteSingle(ctx context.Context, sqlquery *domain.
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		dbCnx, _ := cnx.DB()
-		dbCnx.Close()
-	}()
 
 	squ.repo.SetDB(cnx)
+	defer squ.repo.CloseDB()
 
 	result, err := squ.repo.Execute(ctx, target.SqlQuery, sqlquery.PostParams)
 	if err != nil {
