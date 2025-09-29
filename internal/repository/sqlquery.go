@@ -22,6 +22,12 @@ func (r *SQLQueryRepo) SetDB(db *gorm.DB) {
 	r.db = db
 }
 
+func (r *SQLQueryRepo) CloseDB() {
+	if cnx, err := r.db.DB(); err == nil {
+		cnx.Close()
+	}
+}
+
 func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error) {
 	var result []map[string]any
 	start := time.Now()
