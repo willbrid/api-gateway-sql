@@ -28,7 +28,7 @@
 api_gateway_sql:
   # Configuration de la base de données
   sqlitedb: "api_gateway_sql"
-  # Configuration pour l'activation ou désactiver de la documentation des api
+  # Configuration pour l'activation ou désactivation de la documentation des api
   enable_swagger: true
   # Configuration des paramètres d'authentification
   auth:
