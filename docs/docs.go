@@ -121,6 +121,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api-gateway-sql/batchstats/{uid}/blocks": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of Blocks By a BatchStat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apisql"
+                ],
+                "summary": "Get Blocks result",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page_num",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
         "/api-gateway-sql/batchstats/{uid}/completed": {
             "get": {
                 "security": [
@@ -139,6 +202,49 @@ const docTemplate = `{
                     "apisql"
                 ],
                 "summary": "Mark completed BatchStat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpresponse.HTTPResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-gateway-sql/blocks/{uid}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get a Block by uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apisql"
+                ],
+                "summary": "Get Block result",
                 "parameters": [
                     {
                         "type": "string",

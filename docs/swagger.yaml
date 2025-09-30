@@ -223,6 +223,47 @@ paths:
       summary: Get BatchStat result
       tags:
       - apisql
+  /api-gateway-sql/batchstats/{uid}/blocks:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of Blocks By a BatchStat
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page_num
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Get Blocks result
+      tags:
+      - apisql
   /api-gateway-sql/batchstats/{uid}/completed:
     get:
       consumes:
@@ -248,6 +289,33 @@ paths:
       security:
       - BasicAuth: []
       summary: Mark completed BatchStat
+      tags:
+      - apisql
+  /api-gateway-sql/blocks/{uid}:
+    get:
+      consumes:
+      - application/json
+      description: Get a Block by uid
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Get Block result
       tags:
       - apisql
   /healthz:
