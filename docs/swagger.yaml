@@ -160,6 +160,96 @@ paths:
       summary: Execute batch sql query
       tags:
       - apisql
+  /api-gateway-sql/batchstats:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of BatchStat
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page_num
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Get BatchStats result
+      tags:
+      - apisql
+  /api-gateway-sql/batchstats/{uid}:
+    get:
+      consumes:
+      - application/json
+      description: Get a BatchStat by uid
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Get BatchStat result
+      tags:
+      - apisql
+  /api-gateway-sql/batchstats/{uid}/completed:
+    get:
+      consumes:
+      - application/json
+      description: Mark completed a BatchStat by uid
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpresponse.HTTPResp'
+      security:
+      - BasicAuth: []
+      summary: Mark completed BatchStat
+      tags:
+      - apisql
   /healthz:
     get:
       consumes:
