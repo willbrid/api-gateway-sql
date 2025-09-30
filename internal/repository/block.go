@@ -35,11 +35,11 @@ func (b *BlockRepo) FindAllByBatchStatID(ctx context.Context, batchStatId string
 
 	tx := b.appDb.WithContext(ctx).Model(&domain.Block{})
 
-	if err := tx.Where("BatchStatID = ?", batchStatId).Count(&total).Error; err != nil {
+	if err := tx.Where("batch_stat_id = ?", batchStatId).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := tx.Order("created_at DESC").Find(&blocks).Where("BatchStatID = ?", batchStatId).Offset(offset).Limit(limit).Error; err != nil {
+	if err := tx.Order("created_at DESC").Find(&blocks).Where("batch_stat_id = ?", batchStatId).Offset(offset).Limit(limit).Error; err != nil {
 		return nil, 0, err
 	}
 
