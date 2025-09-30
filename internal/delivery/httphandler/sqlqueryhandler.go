@@ -149,7 +149,7 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 		SQLFileContent: string(sqlBytes),
 	}
 
-	if err := h.Usercases.ISQLInitDatabaseUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
+	if err := h.Usercases.ISQLQueryUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
 		logger.Error("error: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
 		return

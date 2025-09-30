@@ -11,9 +11,6 @@ import (
 type ISQLQueryRepo interface {
 	Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error)
 	ExecuteBatch(ctx context.Context, query string, params []map[string]any) error
-}
-
-type ISQLInitDatabaseRepo interface {
 	ExecuteInit(ctx context.Context, sqlQueries []string) error
 }
 
@@ -32,17 +29,15 @@ type IBlock interface {
 }
 
 type Repositories struct {
-	ISQLQueryRepo        ISQLQueryRepo
-	ISQLInitDatabaseRepo ISQLInitDatabaseRepo
-	IBatchStat           IBatchStat
-	IBlock               IBlock
+	ISQLQueryRepo ISQLQueryRepo
+	IBatchStat    IBatchStat
+	IBlock        IBlock
 }
 
 func NewRepositories(appDb *gorm.DB) *Repositories {
 	return &Repositories{
-		ISQLQueryRepo:        NewSQLQueryRepo(),
-		ISQLInitDatabaseRepo: NewSQLInitDatabaseRepo(),
-		IBatchStat:           NewBatchStatRepo(appDb),
-		IBlock:               NewBlockRepo(appDb),
+		ISQLQueryRepo: NewSQLQueryRepo(),
+		IBatchStat:    NewBatchStatRepo(appDb),
+		IBlock:        NewBlockRepo(appDb),
 	}
 }

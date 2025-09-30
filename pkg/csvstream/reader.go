@@ -1,6 +1,8 @@
 package csvstream
 
 import (
+	"api-gateway-sql/pkg/logger"
+
 	"encoding/csv"
 	"io"
 	"mime/multipart"
@@ -15,13 +17,13 @@ type Block struct {
 
 func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
 	var (
-		blockChannel chan *Block
-		errorChannel chan error
+		blockChannel chan *Block = make(chan *Block)
+		errorChannel chan error  = make(chan error)
+		numLine      int         = 0
 	)
 
 	go func() {
 		reader := csv.NewReader(file)
-		numLine := 0
 
 		defer close(blockChannel)
 		defer close(errorChannel)
@@ -38,6 +40,7 @@ func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error
 					break
 				}
 				if err != nil {
+					logger.Info("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
 					errorChannel <- err
 					return
 				}

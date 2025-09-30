@@ -10,20 +10,16 @@ import (
 
 type ISQLQueryUsecase interface {
 	ExecuteSingle(ctx context.Context, sqlquery *domain.SQLQueryInput) (*domain.SQLQueryOutput, error)
+	ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error
 }
 
 type ISQLBatchQueryUsecase interface {
 	ExecuteBatch(ctx context.Context, sqlbatchquery *domain.SQLBatchQueryInput) error
 }
 
-type ISQLInitDatabaseUsecase interface {
-	ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error
-}
-
 type Usecases struct {
-	ISQLQueryUsecase        ISQLQueryUsecase
-	ISQLInitDatabaseUsecase ISQLInitDatabaseUsecase
-	ISQLBatchQueryUsecase   ISQLBatchQueryUsecase
+	ISQLQueryUsecase      ISQLQueryUsecase
+	ISQLBatchQueryUsecase ISQLBatchQueryUsecase
 }
 
 type Deps struct {
@@ -33,7 +29,6 @@ type Deps struct {
 
 func NewUsecases(deps Deps) *Usecases {
 	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), deps.Config)
-	sqlInitDatabaseUsecase := NewSQLInitDatabaseUsecase(deps.Repos.ISQLInitDatabaseRepo.(*repository.SQLInitDatabaseRepo), deps.Config)
 	sqlBatchQueryUsecase := NewSQLBatchQueryUsecase(
 		deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo),
 		deps.Repos.IBatchStat.(*repository.BatchStatRepo),
@@ -42,8 +37,7 @@ func NewUsecases(deps Deps) *Usecases {
 	)
 
 	return &Usecases{
-		ISQLQueryUsecase:        sqlQueryUsecase,
-		ISQLInitDatabaseUsecase: sqlInitDatabaseUsecase,
-		ISQLBatchQueryUsecase:   sqlBatchQueryUsecase,
+		ISQLQueryUsecase:      sqlQueryUsecase,
+		ISQLBatchQueryUsecase: sqlBatchQueryUsecase,
 	}
 }

@@ -6,8 +6,14 @@ import (
 	"api-gateway-sql/internal/pkg/confighelper"
 	"api-gateway-sql/internal/repository"
 	"api-gateway-sql/pkg/database/external"
+	"strings"
 
 	"context"
+	"errors"
+)
+
+var (
+	errUnknownDatasource error = errors.New("unknown datasource name")
 )
 
 type SQLQueryUsecase struct {
@@ -39,4 +45,23 @@ func (squ *SQLQueryUsecase) ExecuteSingle(ctx context.Context, sqlquery *domain.
 	}
 
 	return result, nil
+}
+
+func (squ *SQLQueryUsecase) ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error {
+	database, exist := squ.config.GetDatabaseByDataSourceName(sqlinit.Datasource)
+	if !exist {
+		return errUnknownDatasource
+	}
+
+	cnx, err := external.NewDatabase(database)
+	if err != nil {
+		return err
+	}
+
+	squ.repo.SetDB(cnx)
+	defer squ.repo.CloseDB()
+
+	queries := strings.Split(sqlinit.SQLFileContent, ";")
+
+	return squ.repo.ExecuteInit(ctx, queries)
 }

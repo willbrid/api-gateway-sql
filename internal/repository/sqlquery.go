@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -26,6 +27,21 @@ func (r *SQLQueryRepo) CloseDB() {
 	if cnx, err := r.db.DB(); err == nil {
 		cnx.Close()
 	}
+}
+
+func (r *SQLQueryRepo) ExecuteInit(ctx context.Context, sqlQueries []string) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, sqlQuery := range sqlQueries {
+			query := strings.TrimSpace(sqlQuery)
+			if query != "" {
+				if err := tx.Exec(query).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
 }
 
 func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error) {
