@@ -41,8 +41,10 @@ func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *co
 	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg)
 
 	router.HandleFunc("/healthz", httphandler.HandleHealthCheck).Methods("GET")
+	router.HandleFunc("/api-gateway-sql/blocks/{uid}", httphandler.ApiGetBlockHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/batchstats", httphandler.ApiListBatchStatsHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/batchstats/{uid}", httphandler.ApiGetBatchStatHandler).Methods("GET")
+	router.HandleFunc("/api-gateway-sql/batchstats/{uid}/blocks", httphandler.ApiListBlocksByBatchStatHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/batchstats/{uid}/completed", httphandler.ApiMarkCompletedBatchStatHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/{target}", httphandler.ApiGetSqlHandler).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/{target}", httphandler.ApiPostSqlHandler).Methods("POST")

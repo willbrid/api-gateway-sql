@@ -25,10 +25,16 @@ type IBatchStatUsecase interface {
 	IsAllBatchStatClosed(ctx context.Context) (bool, error)
 }
 
+type IBlockUsecase interface {
+	ListBlocksByBatchStat(ctx context.Context, batchStatId string, pageRequest *paginator.PageRequest) (*paginator.PageResponse, error)
+	GetBlockById(ctx context.Context, uid string) (*domain.Block, error)
+}
+
 type Usecases struct {
 	ISQLQueryUsecase      ISQLQueryUsecase
 	ISQLBatchQueryUsecase ISQLBatchQueryUsecase
 	IBatchStatUsecase     IBatchStatUsecase
+	IBlockUsecase         IBlockUsecase
 }
 
 type Deps struct {
@@ -45,10 +51,12 @@ func NewUsecases(deps Deps) *Usecases {
 		deps.Config,
 	)
 	batchStatUsecase := NewBatchStatUsecase(deps.Repos.IBatchStat.(*repository.BatchStatRepo))
+	blockUsecase := NewBlockUsecase(deps.Repos.IBlock.(*repository.BlockRepo))
 
 	return &Usecases{
 		ISQLQueryUsecase:      sqlQueryUsecase,
 		ISQLBatchQueryUsecase: sqlBatchQueryUsecase,
 		IBatchStatUsecase:     batchStatUsecase,
+		IBlockUsecase:         blockUsecase,
 	}
 }

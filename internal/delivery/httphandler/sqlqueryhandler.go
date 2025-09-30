@@ -317,3 +317,82 @@ func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter,
 
 	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
 }
+
+// ApiListBlocksByBatchStatsHandler godoc
+// @Summary      Get Blocks result
+// @Description  Get a paginated list of Blocks By a BatchStat
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        uid path string  true  "uid"
+// @Param        page_num query  int  false  "Page number" default(1)
+// @Param        page_size query int  false  "Page size" default(20)
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      400  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/batchstats/{uid}/blocks [get]
+func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars     map[string]string = mux.Vars(req)
+		uid      string            = vars["uid"]
+		queries  url.Values        = req.URL.Query()
+		pageNum  int
+		pageSize int
+		ctx      context.Context = req.Context()
+		err      error
+	)
+
+	pageNum, err = strconv.Atoi(queries.Get("page_num"))
+	if err != nil {
+		logger.Error("failed to handle page_num param query: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
+		return
+	}
+	pageSize, err = strconv.Atoi(queries.Get("page_size"))
+	if err != nil {
+		logger.Error("failed to handle page_size param query: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
+		return
+	}
+
+	pageRequest := paginator.NewPageRequest(pageNum, pageSize)
+	var blocksPaginatorResponse *paginator.PageResponse
+
+	blocksPaginatorResponse, err = h.Usercases.IBlockUsecase.ListBlocksByBatchStat(ctx, uid, pageRequest)
+	if err != nil {
+		logger.Error("failed to list blocks: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	}
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, blocksPaginatorResponse)
+}
+
+// ApiGetBlockHandler godoc
+// @Summary      Get Block result
+// @Description  Get a Block by uid
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        uid path string  true  "uid"
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/blocks/{uid} [get]
+func (h *HTTPHandler) ApiGetBlockHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars map[string]string = mux.Vars(req)
+		uid  string            = vars["uid"]
+		ctx  context.Context   = req.Context()
+	)
+
+	block, err := h.Usercases.IBlockUsecase.GetBlockById(ctx, uid)
+	if err != nil {
+		logger.Error("failed to get block: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	}
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, block)
+}
