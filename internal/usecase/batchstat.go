@@ -16,6 +16,15 @@ func NewBatchStatUsecase(batchStatRepo *repository.BatchStatRepo) *BatchStatUsec
 	return &BatchStatUsecase{batchStatRepo}
 }
 
+func (b *BatchStatUsecase) IsAllBatchStatClosed(ctx context.Context) (bool, error) {
+	totalUncompletedBatchStat, err := b.repo.CountUncompletedBatchStat(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return totalUncompletedBatchStat <= 0, nil
+}
+
 func (b *BatchStatUsecase) ListBatchStats(ctx context.Context, pageRequest *paginator.PageRequest) (*paginator.PageResponse, error) {
 	offset := pageRequest.Offset()
 	limit := pageRequest.Limit()

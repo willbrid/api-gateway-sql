@@ -22,6 +22,7 @@ type IBatchStatUsecase interface {
 	ListBatchStats(ctx context.Context, pageRequest *paginator.PageRequest) (*paginator.PageResponse, error)
 	GetBatchStatById(ctx context.Context, uid string) (*domain.BatchStat, error)
 	MarkCompletedBatchStat(ctx context.Context, uid string) error
+	IsAllBatchStatClosed(ctx context.Context) (bool, error)
 }
 
 type Usecases struct {

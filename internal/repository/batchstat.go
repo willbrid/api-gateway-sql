@@ -61,6 +61,17 @@ func (d *BatchStatRepo) FindById(ctx context.Context, uid string) (*domain.Batch
 	return &batch, nil
 }
 
+func (d *BatchStatRepo) CountUncompletedBatchStat(ctx context.Context) (int64, error) {
+	var total int64
+
+	err := d.appDb.WithContext(ctx).Model(&domain.BatchStat{}).Count(&total).Where("Completed = ?", false).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
 func (d *BatchStatRepo) FindAll(ctx context.Context, offset, limit int) ([]*domain.BatchStat, int64, error) {
 	var batchStats []*domain.BatchStat
 	var total int64

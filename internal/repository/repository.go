@@ -20,6 +20,7 @@ type IBatchStat interface {
 	AddBlockToBatchStat(ctx context.Context, bs *domain.BatchStat, block *domain.Block) (*domain.Block, error)
 	FindAll(ctx context.Context, offset, limit int) ([]*domain.BatchStat, int64, error)
 	FindById(ctx context.Context, uid string) (*domain.BatchStat, error)
+	CountUncompletedBatchStat(ctx context.Context) (int64, error)
 }
 
 type IBlock interface {

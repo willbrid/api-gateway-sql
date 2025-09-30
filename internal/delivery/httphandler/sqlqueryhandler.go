@@ -22,6 +22,7 @@ const (
 	errUnableToReadSQLFile         string = "unable to read the sql file content"
 	errUnableToReadCSVFile         string = "unable to read the csv file content"
 	errUnableToExecuteInitSqlQuery string = "unable to execute the init sql query"
+	errThereIsAnUnCompletedBatch   string = "there is an uncompleted batch"
 )
 
 // HandleHealthCheck godoc
@@ -178,12 +179,22 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 	var (
 		vars       map[string]string = mux.Vars(req)
 		targetName string            = vars["target"]
+		ctx        context.Context   = req.Context()
 	)
 
 	csvfile, _, err := req.FormFile("csvfile")
 	if err != nil {
 		logger.Error("failed to read csv file: %s", err.Error())
 		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
+		return
+	}
+
+	if isAllBatchStatClosed, err := h.Usercases.IBatchStatUsecase.IsAllBatchStatClosed(ctx); err != nil {
+		logger.Error("an error occurred: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	} else if isAllBatchStatClosed == false {
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errThereIsAnUnCompletedBatch, nil)
 		return
 	}
 
