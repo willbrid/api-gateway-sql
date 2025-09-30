@@ -1,9 +1,35 @@
-## Fichier de configuration
+# Configuration
+
+### Options de configuration
+
+- Mode binaire
+
+|Option          |Obligatoire|Description|
+|----------------|-----------|-----------|
+`--config-file`      |oui|option permettant de préciser l'emplacement du fichier de configuration
+`--port`|non|option permettant de préciser le port (par défaut : `5297`)
+`--enable-https`     |non|option permettant d'activer ou désactiver la communication tls (par défaut : `false`)
+`--cert-file`|non|option permettant de préciser l'emplacement du fichier de certificat (obligatoire si l'option `--enable-https` est à `true`)
+`--key-file`|non|option permettant de préciser l'emplacement du fichier de clé privée (obligatoire si l'option `--enable-https` est à `true`)
+
+- Mode conteneur
+
+|Variable d'environnement|Obligatoire|Description|
+|------------------------|-----------|-----------|
+`API_GATEWAY_SQL_CONFIG_FILE`|non|variable permettant de préciser l'emplacement du fichier de configuration dans le conteneur (par défaut: `/etc/api-gateway-sql/config.yaml`). Il peut être écrasé avec un fichier externe si celui-ci est monté en volume avec le même nom et au même emplacement.
+`API_GATEWAY_SQL_PORT`|non|variable permettant de préciser le port (par défaut : `5297`)
+`API_GATEWAY_SQL_ENABLE_HTTPS`|non|variable permettant d'activer ou désactiver la communication tls (par défaut : `true`)
+`API_GATEWAY_SQL_CERT_FILE`|non|variable permettant de préciser l'emplacement du fichier de certificat (obligatoire si la variable `API_GATEWAY_SQL_ENABLE_HTTPS` est à `true`, par défaut : `/etc/api-gateway-sql/tls/server.crt`)
+`API_GATEWAY_SQL_KEY_FILE`|non|variable permettant de préciser l'emplacement du fichier de clé privée (obligatoire si la variable `API_GATEWAY_SQL_ENABLE_HTTPS` est à `true`, par défaut : `/etc/api-gateway-sql/tls/server.key`)
+
+### Fichier de configuration
 
 ```
 api_gateway_sql:
   # Configuration de la base de données
   sqlitedb: "api_gateway_sql"
+  # Configuration pour l'activation ou désactiver de la documentation des api
+  enable_swagger: true
   # Configuration des paramètres d'authentification
   auth:
     # Paramètre d'activation ou de désactivation de l'authentification
