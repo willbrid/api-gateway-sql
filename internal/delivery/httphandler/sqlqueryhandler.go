@@ -4,11 +4,14 @@ import (
 	"api-gateway-sql/internal/domain"
 	"api-gateway-sql/pkg/httpresponse"
 	"api-gateway-sql/pkg/logger"
+	"api-gateway-sql/pkg/paginator"
 
 	"context"
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -195,6 +198,111 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 			logger.Error("failed to process batch: %s", err.Error())
 		}
 	}()
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
+}
+
+// ApiListBatchStatsHandler godoc
+// @Summary      Get BatchStats result
+// @Description  Get a paginated list of BatchStat
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        page_num query  int  false  "Page number" default(1)
+// @Param        page_size query int  false  "Page size" default(20)
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      400  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/batchstats [get]
+func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		queries  url.Values = req.URL.Query()
+		pageNum  int
+		pageSize int
+		ctx      context.Context = req.Context()
+		err      error
+	)
+
+	pageNum, err = strconv.Atoi(queries.Get("page_num"))
+	if err != nil {
+		logger.Error("failed to handle page_num param query: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
+		return
+	}
+	pageSize, err = strconv.Atoi(queries.Get("page_size"))
+	if err != nil {
+		logger.Error("failed to handle page_size param query: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
+		return
+	}
+
+	pageRequest := paginator.NewPageRequest(pageNum, pageSize)
+	var statsPaginatorResponse *paginator.PageResponse
+
+	statsPaginatorResponse, err = h.Usercases.IBatchStatUsecase.ListBatchStats(ctx, pageRequest)
+	if err != nil {
+		logger.Error("failed to list batchstat: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	}
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, statsPaginatorResponse)
+}
+
+// ApiGetBatchStatHandler godoc
+// @Summary      Get BatchStat result
+// @Description  Get a BatchStat by uid
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        uid path string  true  "uid"
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/batchstats/{uid} [get]
+func (h *HTTPHandler) ApiGetBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars map[string]string = mux.Vars(req)
+		uid  string            = vars["uid"]
+		ctx  context.Context   = req.Context()
+	)
+
+	batchStat, err := h.Usercases.IBatchStatUsecase.GetBatchStatById(ctx, uid)
+	if err != nil {
+		logger.Error("failed to get batchstat: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	}
+
+	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, batchStat)
+}
+
+// ApiMarkCompletedBatchStatHandler godoc
+// @Summary      Mark completed BatchStat
+// @Description  Mark completed a BatchStat by uid
+// @Tags         apisql
+// @Accept       json
+// @Produce      json
+// @Param        uid path string  true  "uid"
+// @Success      200  {object}  httpresponse.HTTPResp
+// @Failure      500  {object}  httpresponse.HTTPResp
+// @Security     BasicAuth
+// @Router       /api-gateway-sql/batchstats/{uid}/completed [get]
+func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
+	var (
+		vars map[string]string = mux.Vars(req)
+		uid  string            = vars["uid"]
+		ctx  context.Context   = req.Context()
+		err  error
+	)
+
+	err = h.Usercases.IBatchStatUsecase.MarkCompletedBatchStat(ctx, uid)
+	if err != nil {
+		logger.Error("failed to mark compled a batchstat: %s", err.Error())
+		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		return
+	}
 
 	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
 }
