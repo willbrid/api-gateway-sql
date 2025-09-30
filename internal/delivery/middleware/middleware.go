@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"api-gateway-sql/config"
+	"api-gateway-sql/pkg/httpresponse"
 	"api-gateway-sql/pkg/logger"
 
 	"encoding/base64"
@@ -16,13 +17,13 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
 				logger.Error("no authorization header found")
-				http.Error(resp, "invalid credential", http.StatusUnauthorized)
+				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
 			if !strings.HasPrefix(auth, "Basic ") {
 				logger.Error("invalid authorization header")
-				http.Error(resp, "invalid credential", http.StatusUnauthorized)
+				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
@@ -30,7 +31,7 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 			decodedToken, err := base64.StdEncoding.DecodeString(token)
 			if err != nil {
 				logger.Error("failed to decode base64 token - %v", err)
-				http.Error(resp, "invalid credential", http.StatusUnauthorized)
+				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
@@ -39,7 +40,7 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 			password := credentialParts[1]
 			if username != config.ApiGatewaySQL.Auth.Username || password != config.ApiGatewaySQL.Auth.Password {
 				logger.Error("invalid username or password")
-				http.Error(resp, "invalid credential", http.StatusUnauthorized)
+				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 		}
