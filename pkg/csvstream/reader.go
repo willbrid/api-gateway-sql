@@ -34,13 +34,13 @@ func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error
 				Lines:     make([][]string, 0, blockSize),
 			}
 
-			for i := 0; i < blockSize; i++ {
+			for i := range blockSize {
 				record, err := reader.Read()
 				if err == io.EOF {
 					break
 				}
 				if err != nil {
-					logger.Info("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
+					logger.Error("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
 					errorChannel <- err
 					return
 				}
