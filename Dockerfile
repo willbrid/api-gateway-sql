@@ -1,4 +1,4 @@
-FROM golang:1.24 AS builder
+FROM golang:1.24.7-alpine3.22 AS builder
 
 RUN apt-get update && apt-get install -y gcc sqlite3 libsqlite3-dev
 
@@ -29,8 +29,11 @@ COPY --from=builder --chown=nobody /build/fixtures/tls/server.key /etc/api-gatew
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
+ENV API_GATEWAY_SQL_CONFIG_FILE="/etc/api-gateway-sql/config.yaml"
 ENV API_GATEWAY_SQL_PORT=5297
 ENV API_GATEWAY_SQL_ENABLE_HTTPS="true"
+ENV API_GATEWAY_SQL_CERT_FILE="/etc/api-gateway-sql/tls/server.crt"
+ENV API_GATEWAY_SQL_KEY_FILE="/etc/api-gateway-sql/tls/server.key"
 
 USER nobody
 EXPOSE $API_GATEWAY_SQL_PORT
