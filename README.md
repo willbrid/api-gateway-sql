@@ -1,6 +1,6 @@
 # Api_gateway_sql
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE) [![Build and Release](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml/badge.svg)](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml)
 
 **api_gateway_sql** est une application permettant d'exécuter des requêtes SQL via une API. Chaque requête SQL est définie dans un fichier de configuration et associée à une cible (appelée target). L'exécution de la requête s'effectue en appelant l'API correspondante, avec la cible spécifiée. L'application supporte aussi bien les requêtes simples que les requêtes en batch, et est compatible avec plusieurs systèmes de gestion de bases de données (SGBD) populaires, notamment : MySQL, MariaDB, PostgreSQL, SQL Server et SQLite.
 
