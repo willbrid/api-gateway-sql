@@ -39,7 +39,7 @@ func (b *BlockRepo) FindAllByBatchStatID(ctx context.Context, batchStatId string
 		return nil, 0, err
 	}
 
-	if err := tx.Find(&blocks).Where("BatchStatID = ?", batchStatId).Offset(offset).Limit(limit).Error; err != nil {
+	if err := tx.Order("created_at DESC").Find(&blocks).Where("BatchStatID = ?", batchStatId).Offset(offset).Limit(limit).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -49,7 +49,7 @@ func (b *BlockRepo) FindAllByBatchStatID(ctx context.Context, batchStatId string
 func (b *BlockRepo) FindById(ctx context.Context, uid string) (*domain.Block, error) {
 	block := domain.Block{}
 
-	if err := b.appDb.WithContext(ctx).First(&block, uid).Preload("FailureRanges").Error; err != nil {
+	if err := b.appDb.WithContext(ctx).First(&block, "id = ?", uid).Preload("FailureRanges").Error; err != nil {
 		return nil, err
 	}
 

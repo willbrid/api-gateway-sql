@@ -54,7 +54,7 @@ func (d *BatchStatRepo) AddBlockToBatchStat(ctx context.Context, bs *domain.Batc
 func (d *BatchStatRepo) FindById(ctx context.Context, uid string) (*domain.BatchStat, error) {
 	batch := domain.BatchStat{}
 
-	if err := d.appDb.WithContext(ctx).First(&batch, uid).Error; err != nil {
+	if err := d.appDb.WithContext(ctx).First(&batch, "id = ?", uid).Error; err != nil {
 		return nil, err
 	}
 
@@ -71,7 +71,7 @@ func (d *BatchStatRepo) FindAll(ctx context.Context, offset, limit int) ([]*doma
 		return nil, 0, err
 	}
 
-	if err := tx.Find(&batchStats).Offset(offset).Limit(limit).Error; err != nil {
+	if err := tx.Order("created_at DESC").Find(&batchStats).Offset(offset).Limit(limit).Error; err != nil {
 		return nil, 0, err
 	}
 
