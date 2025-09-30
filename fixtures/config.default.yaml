@@ -1,5 +1,6 @@
 api_gateway_sql:
   sqlitedb: "api_gateway_sql"
+  enable_swagger: true
   auth:
     enabled: true
     username: test
