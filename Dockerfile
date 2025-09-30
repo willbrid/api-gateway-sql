@@ -1,4 +1,4 @@
-FROM golang:1.24.7-alpine3.22 AS builder
+FROM golang:1.24.7 AS builder
 
 RUN apt-get update && apt-get install -y gcc sqlite3 libsqlite3-dev
 
