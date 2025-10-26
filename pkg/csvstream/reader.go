@@ -19,10 +19,10 @@ func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error
 	var (
 		blockChannel chan *Block = make(chan *Block)
 		errorChannel chan error  = make(chan error)
-		numLine      int         = 0
 	)
 
 	go func() {
+		var numLine int = 0
 		reader := csv.NewReader(file)
 
 		defer close(blockChannel)
