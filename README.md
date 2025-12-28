@@ -1,44 +1,45 @@
-# Api_gateway_sql
+# Api-gateway-sql
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE) [![Build and Release](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml/badge.svg)](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml)
 
-**api_gateway_sql** est une application permettant d'exécuter des requêtes SQL via une API. Chaque requête SQL est définie dans un fichier de configuration et associée à une cible (appelée target). L'exécution de la requête s'effectue en appelant l'API correspondante, avec la cible spécifiée. L'application supporte aussi bien les requêtes simples que les requêtes en batch, et est compatible avec plusieurs systèmes de gestion de bases de données (SGBD) populaires, notamment : MySQL, MariaDB, PostgreSQL, SQL Server et SQLite.
+**Api-gateway-sql** is an application that allows SQL queries to be executed through an API. Each SQL query is defined in a configuration file and associated with a target. Query execution is performed by calling the corresponding API endpoint with the specified target.
+The application supports both simple and batch queries and is compatible with several popular database management systems (DBMS), including: MySQL, MariaDB, PostgreSQL, SQL Server, and SQLite.
 
-## Fonctionnalités
+## Features
 
-L'application **api_gateway_sql** offre plusieurs fonctionnalités pour l'exécution de requêtes SQL via une API, avec un support pour des requêtes simples, paramétrées, et en batch. Voici un aperçu des fonctionnalités principales :
+The **api-gateway-sql** application provides several features for executing SQL queries via an API, with support for simple, parameterized, and batch queries. Below is an overview of the main features:
 
-- **Configuration d'authentification**
+- **Authentication configuration**
 
-L'application permet de configurer une authentification de type **basic** pour sécuriser l'accès à l'API.
+The application allows configuring *Basic authentication* to secure access to the API.
 
-- **Exécution de requêtes SQL via un fichier sql (POST)**
+- **Execution of SQL queries from a SQL file (POST)**
 
-L'application permet d'exécuter des requêtes SQL définies dans un fichier sql. Utile dans le cas de l'initialisation du schéma d'une base de données.
+The application allows executing SQL queries defined in a SQL file. This is particularly useful for database schema initialization.
 
-- **Exécution de requêtes SQL sans paramètres (GET)**
+- **Execution of SQL queries without parameters (GET)**
 
-Certaines requêtes sql peuvent être exécutées sans passer de paramètres supplémentaires. L'API supporte l'exécution directe d'une requête SQL par une requête GET.
+Some SQL queries can be executed without additional parameters. The API supports direct execution of such SQL queries via a GET request.
 
-- **Exécution de requêtes SQL avec des paramètres envoyés en POST (POST)**
+- **Execution of parameterized SQL queries using POST (POST)**
 
-L'application permet d'exécuter des requêtes SQL paramétrées en envoyant des paramètres via une requête POST. Cette fonctionnalité est idéale pour des requêtes dynamiques où les valeurs des colonnes peuvent changer à chaque exécution.
+The application allows executing parameterized SQL queries by sending parameters through a POST request. This feature is ideal for dynamic queries where column values may change with each execution.
 
-- **Exécution en batch d'une requête SQL avec des valeurs issues d'un fichier CSV (POST)**
+- **Batch execution of SQL queries using values from a CSV file (POST)**
 
-L'application prend en charge l'exécution de requêtes SQL en batch en récupérant les paramètres d'un fichier CSV. Cela est utile pour automatiser le traitement d'un grand nombre de données en une seule requête.
+The application supports batch execution of SQL queries by retrieving parameters from a CSV file. This is useful for automating the processing of large datasets in a single operation.
 
-- **Statistiques d'une exécution en batch (GET)**
+- **Batch execution statistics (GET)**
 
-Pour chaque exécution en batch, l'application permet d'obtenir des statistiques sur le processus, comme le nombre d'exécutions réussies et échouées, la durée totale, et d'autres métriques pertinentes.
+For each batch execution, the application provides access to statistics about the process, such as the number of successful and failed executions, total duration, and other relevant metrics.
 
 ## Documentation
 
-1- [Fichier de configuration](https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/configuration.md) <br>
-2- [Démarrage d'une base de données de test par SGBD](https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/databases.md) <br>
-3- [Installation](https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/installation.md) <br>
-4- [Utilisation](https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/utilisation.md)
+1- [Configuration file](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/configuration.md) <br>
+2- [Starting a test database per DBMS](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/databases.md) <br>
+3- [Installation](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/installation.md) <br>
+4- [Usage](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/usage.md)
 
-## Licence
+## License
 
-Ce projet est sous licence MIT - voir le fichier [LICENSE](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE) pour plus de détails.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/willbrid/api-gateway-sql/blob/main/LICENSE) file for more details.

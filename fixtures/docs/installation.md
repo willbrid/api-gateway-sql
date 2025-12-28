@@ -1,18 +1,18 @@
 ## Installation
 
-Ici nous installons l'application **api_gateway_sql** sous une machine linux :
-- via **docker** : installation testée sur Ubuntu 20.04, Ubuntu 22.04
-- via **podman** : installation testée sur Rocky linux 8.9
+Here we install the **api-gateway-sql** application on a Linux machine:
 
-En prérequis, il est nécessaire d'installer un SGBD compatible, tel que **MariaDB**, **MySQL**, **PostgreSQL**, **SqlServer** ou **Sqlite** et de configurer une base de données; ou bien d'utiliser une base de données existante provenant d'un SGBD compatible déjà installé. **MariaDB** est utilisé ici à titre d'exemple pour un environnement de test. L'application permet aussi de configurer une ou plusieurs bases de données provenant d'un ou plusieurs SGBD compatibles différents. Lors de l'exécution, il est possible de requêter une base de données spécifique en consommant une API et en précisant une cible dans le paramètre URL. Cette cible fait référence à une configuration qui contient à la fois la référence à la base de données à interroger ainsi que la chaîne SQL à exécuter. <br>
-Vous pouvez, par exemple, opter pour une installation conteneurisée en fonction de votre système d'exploitation. Le lien ci-dessous vous guidera pour mettre en place une sandbox **MariaDB** avec la base de données **school** :
+- via **docker**: installation tested on Ubuntu 22.04 and Ubuntu 24.04
+- via **podman**: installation tested on Rocky Linux 8.9
 
-[https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/databases.md](https://github.com/willbrid/api_gateway_sql/blob/main/fixtures/docs/databases.md).
+As a prerequisite, it is necessary to install a compatible DBMS, such as **MariaDB**, **MySQL**, **PostgreSQL**, **SqlServer**, or **Sqlite**, and configure a database; or to use an existing database from a compatible DBMS that is already installed. **MariaDB** is used here as an example for a test environment. The application also allows you to configure one or more databases from one or more different compatible DBMSs. During execution, it is possible to query a specific database by consuming an API and specifying a target in the URL parameter. This target refers to a configuration that contains both the reference to the database to query and the SQL string to execute. You can, for example, choose a containerized installation depending on your operating system. The link below will guide you through setting up a **MariaDB** sandbox with the **school** database:
 
-A présent installons l'application **api_gateway_sql** en conteneur.
+[https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/databases.md](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/docs/databases.md).
+
+Now let's install the **api-gateway-sql** application in a container.
 
 ```
-mkdir $HOME/api_gateway_sql && $HOME/api_gateway_sql/data && cd $HOME/api_gateway_sql
+mkdir $HOME/api-gateway-sql && $HOME/api-gateway-sql/data && cd $HOME/api-gateway-sql
 ```
 
 ```
@@ -66,35 +66,35 @@ api_gateway_sql:
     sql: "insert into school (name, address) values ({{name}}, {{address}})"
 ```
 
-- **Installation sans persistence des données sqlite de l'application**
+- **Installation without persistence of SQLite application data**
 
-Sous Ubuntu
+Under Ubuntu
 ```
 docker run -d --network=host --name api_gateway_sql -v $HOME/api_gateway_sql/config.yaml:/etc/api-gateway-sql/config.yaml -e API_GATEWAY_SQL_ENABLE_HTTPS=true willbrid/api-gateway-sql:latest
 ```
 
-ou
+or
 
-Sous Rocky
+Under Rocky
 ```
 podman run -d --net=host --name api_gateway_sql -v $HOME/api_gateway_sql/config.yaml:/etc/api-gateway-sql/config.yaml:z -e API_GATEWAY_SQL_ENABLE_HTTPS=true willbrid/api-gateway-sql:latest
 ```
 
-- **Installation avec persistence des données sqlite de l'application**
+- **Installation with persistent SQLite data for the application**
 
-Sous Ubuntu
+Under Ubuntu
 ```
 docker run -d --network=host --name api_gateway_sql -v $HOME/api_gateway_sql/data:/data -v $HOME/api_gateway_sql/config.yaml:/etc/api-gateway-sql/config.yaml -e API_GATEWAY_SQL_ENABLE_HTTPS=true willbrid/api-gateway-sql:latest
 ```
 
-ou
+or
 
-Sous Rocky
+Under Rocky
 ```
 podman run -d --net=host --name api_gateway_sql -v $HOME/api_gateway_sql/data:/data:z -v $HOME/api_gateway_sql/config.yaml:/etc/api-gateway-sql/config.yaml:z -e API_GATEWAY_SQL_ENABLE_HTTPS=true willbrid/api-gateway-sql:latest
 ```
 
-Une fois l'installation terminée, pour ouvrir le swagger via un navigateur, nous accédons à sa page via l'url ci-dessous
+Once the installation is complete, to open Swagger via a browser, we access its page via the URL below.
 
 ```
 https://localhost:5297/swagger/index.html

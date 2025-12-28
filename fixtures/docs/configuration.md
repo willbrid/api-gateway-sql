@@ -1,77 +1,77 @@
 # Configuration
 
-### Options de configuration
+### Configuration options
 
-- Mode binaire
+- **Binary mode**
 
-|Option          |Obligatoire|Description|
-|----------------|-----------|-----------|
-`--config-file`      |oui|option permettant de préciser l'emplacement du fichier de configuration
-`--port`|non|option permettant de préciser le port (par défaut : `5297`)
-`--enable-https`     |non|option permettant d'activer ou désactiver la communication tls (par défaut : `false`)
-`--cert-file`|non|option permettant de préciser l'emplacement du fichier de certificat (obligatoire si l'option `--enable-https` est à `true`)
-`--key-file`|non|option permettant de préciser l'emplacement du fichier de clé privée (obligatoire si l'option `--enable-https` est à `true`)
+|Option          |Mandatory|Description|
+|----------------|---------|-----------|
+`--config-file`      |yes|option to specify the location of the configuration file
+`--port`|no|option to specify the port (default: `5297`)
+`--enable-https`     |no|option to enable or disable TLS communication (default: `false`)
+`--cert-file`|no|option to specify the location of the certificate file (required if the `--enable-https` option is set to `true`)
+`--key-file`|no|option to specify the location of the private key file (required if the `--enable-https` option is set to `true`)
 
-- Mode conteneur
+- **Container mode**
 
-|Variable d'environnement|Obligatoire|Description|
-|------------------------|-----------|-----------|
-`API_GATEWAY_SQL_CONFIG_FILE`|non|variable permettant de préciser l'emplacement du fichier de configuration dans le conteneur (par défaut: `/etc/api-gateway-sql/config.yaml`). Il peut être écrasé avec un fichier externe si celui-ci est monté en volume avec le même nom et au même emplacement.
-`API_GATEWAY_SQL_PORT`|non|variable permettant de préciser le port (par défaut : `5297`)
-`API_GATEWAY_SQL_ENABLE_HTTPS`|non|variable permettant d'activer ou désactiver la communication tls (par défaut : `true`)
-`API_GATEWAY_SQL_CERT_FILE`|non|variable permettant de préciser l'emplacement du fichier de certificat (obligatoire si la variable `API_GATEWAY_SQL_ENABLE_HTTPS` est à `true`, par défaut : `/etc/api-gateway-sql/tls/server.crt`)
-`API_GATEWAY_SQL_KEY_FILE`|non|variable permettant de préciser l'emplacement du fichier de clé privée (obligatoire si la variable `API_GATEWAY_SQL_ENABLE_HTTPS` est à `true`, par défaut : `/etc/api-gateway-sql/tls/server.key`)
+|Environment variable|Mandatory|Description|
+|--------------------|---------|-----------|
+`API_GATEWAY_SQL_CONFIG_FILE`|no|a variable that specifies the location of the configuration file within the container (default: `/etc/api-gateway-sql/config.yaml`). It can be overwritten by an external file if the latter is mounted on a volume with the same name and in the same location.
+`API_GATEWAY_SQL_PORT`|no|variable to specify the port (default: `5297`)
+`API_GATEWAY_SQL_ENABLE_HTTPS`|no|variable to enable or disable TLS communication (default: `true`)
+`API_GATEWAY_SQL_CERT_FILE`|no|variable to specify the location of the certificate file (required if the variable `API_GATEWAY_SQL_ENABLE_HTTPS` is set to `true`, default: `/etc/api-gateway-sql/tls/server.crt`)
+`API_GATEWAY_SQL_KEY_FILE`|no|variable to specify the location of the private key file (required if the variable `API_GATEWAY_SQL_ENABLE_HTTPS` is set to `true`, default: `/etc/api-gateway-sql/tls/server.key`)
 
-### Fichier de configuration
+### Configuration file
 
 ```
 api_gateway_sql:
-  # Configuration de la base de données
+  # Database configuration
   sqlitedb: "api_gateway_sql"
-  # Configuration pour l'activation ou désactivation de la documentation des api
+  # Configuration to enable or disable API documentation
   enable_swagger: true
-  # Configuration des paramètres d'authentification
+  # Authentication parameter configuration
   auth:
-    # Paramètre d'activation ou de désactivation de l'authentification
+    # Parameter to enable or disable authentication
     enabled: true
-    # Paramètre d'utilisateur pris en compte lorsque l'authentification est activée
+    # Username parameter used when authentication is enabled
     username: test
-    # Paramètre de mot de passe pris en compte lorsque l'authentification est activée
+    # Password parameter used when authentication is enabled
     password: test@test
-  # Configuration des paramètres de base de données cible
+  # Target database parameter configuration
   databases:
-    # Paramètre d'identifiant de la cible
+    # Target identifier parameter
   - name: school
-    # Paramètre du type de sgbd
+    # DBMS type parameter
     type: mariadb
-    # Paramètre d'adresse de la base de données
+    # Database host address parameter
     host: "@HOST_IP"
-    # Paramètre de port de la base de données
+    # Database port parameter
     port: 3307
-    # Paramètre d'utilisateur de la base de données
+    # Database user parameter
     username: "test"
-    # Paramètre de mot de passe d'utilisateur de la base de données
+    # Database user password parameter
     password: "test"
-    # Paramètre du nom de la base de données
+    # Database name parameter
     dbname: "school"
-    # Paramètre d'activation ou de désactivation du mode ssl de communication avec la base de données
+    # Parameter to enable or disable SSL communication mode with the database
     sslmode: false
-    # Paramètre de timeout de communication avec la base de données
+    # Database communication timeout parameter
     timeout: 1s
-  # Configuration des paramètres des cibles
+  # Target parameter configuration
   targets:
-    # Paramètre de nom de la cible
+    # Target name parameter
   - name: insert_batch_student
-    # Paramètre de nom pour la base de données cible
+    # Target database name parameter
     data_source_name: school
-    # Paramètre d'activation ou de désactivation de l'exécution en masse
+    # Parameter to enable or disable bulk execution
     multi: true
-    # Paramètre de la taille d'un batch à exécuter. Utiliser lorsque l'exécution en masse est activée
+    # Batch size parameter to execute. Used when bulk execution is enabled
     batch_size: 10
-    # Paramètre du nombre de blocs à utiliser pour décomposer le fichier csv. Utiliser lorsque l'exécution en masse est activée
+    # Number of blocks parameter used to split the CSV file. Used when bulk execution is enabled
     buffer_size: 50
-    # Paramètre de champs d'une table en base de données. Utiliser lorsque l'exécution en masse est activée
+    # Database table fields parameter. Used when bulk execution is enabled
     batch_fields: "name;address"
-    # Paramètre de contenu d'une requête sql
+    # SQL query content parameter
     sql: "insert into school (name, address) values ({{name}}, {{address}})"
 ```
