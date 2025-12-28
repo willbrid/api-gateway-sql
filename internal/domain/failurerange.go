@@ -1,6 +1,6 @@
 package domain
 
-import "api-gateway-sql/pkg/uuid"
+import "github.com/willbrid/api-gateway-sql/pkg/uuid"
 
 type FailureRange struct {
 	ID        string `json:"id" gorm:"primaryKey"`

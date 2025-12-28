@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/pkg/httpresponse"
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/pkg/httpresponse"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"encoding/base64"
 	"net/http"

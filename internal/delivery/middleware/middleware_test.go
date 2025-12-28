@@ -1,8 +1,8 @@
 package middleware_test
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/internal/delivery/middleware"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 
 	"bytes"
 	"net/http"

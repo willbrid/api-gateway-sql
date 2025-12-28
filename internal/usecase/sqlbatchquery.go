@@ -1,14 +1,14 @@
 package usecase
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/internal/domain"
-	"api-gateway-sql/internal/pkg/confighelper"
-	"api-gateway-sql/internal/pkg/mapperfieldshelper"
-	"api-gateway-sql/internal/repository"
-	"api-gateway-sql/pkg/csvstream"
-	"api-gateway-sql/pkg/database/external"
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/pkg/confighelper"
+	"github.com/willbrid/api-gateway-sql/internal/pkg/mapperfieldshelper"
+	"github.com/willbrid/api-gateway-sql/internal/repository"
+	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
+	"github.com/willbrid/api-gateway-sql/pkg/database/external"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"context"
 	"errors"

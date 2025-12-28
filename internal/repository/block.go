@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/domain"
 
 	"context"
 

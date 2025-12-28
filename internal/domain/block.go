@@ -1,9 +1,9 @@
 package domain
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/pkg/csvstream"
-	"api-gateway-sql/pkg/uuid"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
+	"github.com/willbrid/api-gateway-sql/pkg/uuid"
 )
 
 type BlockDataInput struct {

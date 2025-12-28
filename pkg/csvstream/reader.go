@@ -1,7 +1,7 @@
 package csvstream
 
 import (
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"encoding/csv"
 	"io"

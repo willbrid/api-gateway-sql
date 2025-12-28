@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	"api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/config"
 
 	"bytes"
 	"fmt"

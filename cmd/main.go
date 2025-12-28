@@ -1,10 +1,10 @@
 package main
 
 import (
-	"api-gateway-sql/config"
-	_ "api-gateway-sql/docs"
-	"api-gateway-sql/internal/app"
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/config"
+	_ "github.com/willbrid/api-gateway-sql/docs"
+	"github.com/willbrid/api-gateway-sql/internal/app"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"github.com/go-playground/validator/v10"
 )

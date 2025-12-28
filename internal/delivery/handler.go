@@ -1,10 +1,10 @@
 package delivery
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/internal/delivery/httphandler"
-	"api-gateway-sql/internal/delivery/middleware"
-	"api-gateway-sql/internal/usecase"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/internal/delivery/httphandler"
+	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
+	"github.com/willbrid/api-gateway-sql/internal/usecase"
 
 	"fmt"
 	"net/http"

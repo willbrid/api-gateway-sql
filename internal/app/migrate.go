@@ -1,8 +1,8 @@
 package app
 
 import (
-	"api-gateway-sql/internal/domain"
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"gorm.io/gorm"
 )

@@ -1,8 +1,9 @@
 package confighelper
 
 import (
-	"api-gateway-sql/config"
 	"fmt"
+
+	"github.com/willbrid/api-gateway-sql/config"
 )
 
 // GetTargetAndDatabase used to get target and his database

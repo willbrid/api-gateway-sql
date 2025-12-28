@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/domain"
 
 	"gorm.io/gorm"
 )

@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"api-gateway-sql/internal/domain"
-	"api-gateway-sql/internal/pkg/sqlqueryhelper"
+	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/pkg/sqlqueryhelper"
 )
 
 type SQLQueryRepo struct {

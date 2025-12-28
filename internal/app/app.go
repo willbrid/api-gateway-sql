@@ -1,13 +1,13 @@
 package app
 
 import (
-	"api-gateway-sql/config"
-	"api-gateway-sql/internal/delivery"
-	"api-gateway-sql/internal/repository"
-	"api-gateway-sql/internal/usecase"
-	"api-gateway-sql/pkg/database"
-	"api-gateway-sql/pkg/httpserver"
-	"api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/config"
+	"github.com/willbrid/api-gateway-sql/internal/delivery"
+	"github.com/willbrid/api-gateway-sql/internal/repository"
+	"github.com/willbrid/api-gateway-sql/internal/usecase"
+	"github.com/willbrid/api-gateway-sql/pkg/database"
+	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"fmt"
 	"os"
