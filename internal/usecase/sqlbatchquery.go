@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/confighelper"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/mapperfieldshelper"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
@@ -58,7 +59,7 @@ func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery
 				continue
 			}
 
-			blockDataInput := &domain.BlockDataInput{
+			blockDataInput := &dto.BlockDataInput{
 				BSInput: batchStat,
 				BLInput: block,
 				TGInput: target,
@@ -95,7 +96,7 @@ func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery
 	return nil
 }
 
-func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInput *domain.BlockDataInput) {
+func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInput *dto.BlockDataInput) {
 	newBlock := domain.NewBlock(blockDataInput.BLInput.StartLine, blockDataInput.BLInput.EndLine)
 	newBlock, err := squ.batchStatRepo.AddBlockToBatchStat(ctx, blockDataInput.BSInput, newBlock)
 	if err != nil {
