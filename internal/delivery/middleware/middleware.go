@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/willbrid/api-gateway-sql/config"
-	"github.com/willbrid/api-gateway-sql/pkg/httpresponse"
+	"github.com/willbrid/api-gateway-sql/internal/delivery/httpresponse"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"encoding/base64"
