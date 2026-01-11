@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
-	"github.com/willbrid/api-gateway-sql/pkg/paginator"
 
 	"context"
 )

@@ -2,9 +2,9 @@ package httphandler
 
 import (
 	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/pkg/httpresponse"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
-	"github.com/willbrid/api-gateway-sql/pkg/paginator"
 
 	"context"
 	"encoding/json"
