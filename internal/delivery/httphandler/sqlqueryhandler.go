@@ -1,7 +1,7 @@
 package httphandler
 
 import (
-	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/pkg/httpresponse"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
@@ -57,7 +57,7 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 		ctx        context.Context   = req.Context()
 	)
 
-	sqlqueryInput := &domain.SQLQueryInput{
+	sqlqueryInput := &dto.SQLQueryInput{
 		TargetName: targetName,
 		PostParams: make(map[string]any, 0),
 	}
@@ -99,7 +99,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	sqlqueryInput := &domain.SQLQueryInput{
+	sqlqueryInput := &dto.SQLQueryInput{
 		TargetName: targetName,
 		PostParams: postParams,
 	}
@@ -148,7 +148,7 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 		return
 	}
 
-	sqlInitDatabaseInput := &domain.SQLInitDatabaseInput{
+	sqlInitDatabaseInput := &dto.SQLInitDatabaseInput{
 		Datasource:     datasourceName,
 		SQLFileContent: string(sqlBytes),
 	}
@@ -198,7 +198,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 		return
 	}
 
-	sqlBatchQueryInput := &domain.SQLBatchQueryInput{
+	sqlBatchQueryInput := &dto.SQLBatchQueryInput{
 		TargetName: targetName,
 		File:       csvfile,
 	}

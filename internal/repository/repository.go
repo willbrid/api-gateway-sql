@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 
 	"gorm.io/gorm"
 )
 
 type ISQLQueryRepo interface {
-	Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error)
+	Execute(ctx context.Context, query string, params map[string]any) (*dto.SQLQueryOutput, error)
 	ExecuteBatch(ctx context.Context, query string, params []map[string]any) error
 	ExecuteInit(ctx context.Context, sqlQueries []string) error
 }

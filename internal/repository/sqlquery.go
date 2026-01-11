@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/sqlqueryhelper"
 )
 
@@ -44,14 +44,14 @@ func (r *SQLQueryRepo) ExecuteInit(ctx context.Context, sqlQueries []string) err
 	})
 }
 
-func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[string]any) (*domain.SQLQueryOutput, error) {
+func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[string]any) (*dto.SQLQueryOutput, error) {
 	var result []map[string]any
 	start := time.Now()
 	cnx := r.db
 	parsedQuery, parsedParams := sqlqueryhelper.TransformQuery(query, params)
 
 	if err := cnx.WithContext(ctx).Raw(parsedQuery, parsedParams...).Scan(&result).Error; err == nil {
-		return &domain.SQLQueryOutput{
+		return &dto.SQLQueryOutput{
 			Rows:         result,
 			AffectedRows: int64(len(result)),
 			DurationMs:   time.Since(start).Milliseconds(),
@@ -63,7 +63,7 @@ func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[str
 		return nil, tx.Error
 	}
 
-	return &domain.SQLQueryOutput{
+	return &dto.SQLQueryOutput{
 		Rows:         nil,
 		AffectedRows: tx.RowsAffected,
 		DurationMs:   time.Since(start).Milliseconds(),

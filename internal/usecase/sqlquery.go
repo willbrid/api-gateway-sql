@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"github.com/willbrid/api-gateway-sql/config"
-	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/confighelper"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 	"github.com/willbrid/api-gateway-sql/pkg/database/external"
@@ -25,7 +25,7 @@ func NewSQLQueryUsecase(repo *repository.SQLQueryRepo, config *config.Config) *S
 	return &SQLQueryUsecase{repo, config}
 }
 
-func (squ *SQLQueryUsecase) ExecuteSingle(ctx context.Context, sqlquery *domain.SQLQueryInput) (*domain.SQLQueryOutput, error) {
+func (squ *SQLQueryUsecase) ExecuteSingle(ctx context.Context, sqlquery *dto.SQLQueryInput) (*dto.SQLQueryOutput, error) {
 	target, cfgdb, err := confighelper.GetTargetAndDatabase(squ.config, sqlquery.TargetName)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (squ *SQLQueryUsecase) ExecuteSingle(ctx context.Context, sqlquery *domain.
 	return result, nil
 }
 
-func (squ *SQLQueryUsecase) ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error {
+func (squ *SQLQueryUsecase) ExecuteInit(ctx context.Context, sqlinit *dto.SQLInitDatabaseInput) error {
 	database, exist := squ.config.GetDatabaseByDataSourceName(sqlinit.Datasource)
 	if !exist {
 		return errUnknownDatasource

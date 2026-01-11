@@ -32,7 +32,7 @@ func NewSQLBatchQueryUsecase(sqlQueryRepo *repository.SQLQueryRepo, batchStatRep
 	return &SQLBatchQueryUsecase{sqlQueryRepo, batchStatRepo, blockRepo, config}
 }
 
-func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery *domain.SQLBatchQueryInput) error {
+func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery *dto.SQLBatchQueryInput) error {
 	target, cfgdb, err := confighelper.GetTargetAndDatabase(squ.config, sqlbatchquery.TargetName)
 	if err != nil {
 		return err

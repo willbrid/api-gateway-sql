@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/domain"
+	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 
@@ -10,12 +11,12 @@ import (
 )
 
 type ISQLQueryUsecase interface {
-	ExecuteSingle(ctx context.Context, sqlquery *domain.SQLQueryInput) (*domain.SQLQueryOutput, error)
-	ExecuteInit(ctx context.Context, sqlinit *domain.SQLInitDatabaseInput) error
+	ExecuteSingle(ctx context.Context, sqlquery *dto.SQLQueryInput) (*dto.SQLQueryOutput, error)
+	ExecuteInit(ctx context.Context, sqlinit *dto.SQLInitDatabaseInput) error
 }
 
 type ISQLBatchQueryUsecase interface {
-	ExecuteBatch(ctx context.Context, sqlbatchquery *domain.SQLBatchQueryInput) error
+	ExecuteBatch(ctx context.Context, sqlbatchquery *dto.SQLBatchQueryInput) error
 }
 
 type IBatchStatUsecase interface {
