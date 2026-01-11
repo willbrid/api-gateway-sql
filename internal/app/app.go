@@ -5,6 +5,7 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/delivery"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
+	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
 	"github.com/willbrid/api-gateway-sql/pkg/database"
 	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
@@ -15,21 +16,24 @@ import (
 	"syscall"
 )
 
-func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
+func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logger.ILogger) {
 	sqliteAppDatabase, err := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
 	if err != nil {
-		logger.Error("app server database error: %v", err.Error())
+		loggerInstance.Error("app server database error: %v", err.Error())
 		return
 	}
-	MigrateAppDatabase(sqliteAppDatabase.Db)
+	MigrateAppDatabase(sqliteAppDatabase.Db, loggerInstance)
 
 	repos := repository.NewRepositories(sqliteAppDatabase.Db)
+	csvstream := csvstream.NewCSVStream(loggerInstance)
 	usecases := usecase.NewUsecases(usecase.Deps{
-		Repos:  repos,
-		Config: cfgfile,
+		Repos:      repos,
+		Config:     cfgfile,
+		ICSVStream: csvstream,
+		ILogger:    loggerInstance,
 	})
 
-	handlers := delivery.NewHandler(usecases)
+	handlers := delivery.NewHandler(usecases, loggerInstance)
 	httpServer := httpserver.NewServer(
 		fmt.Sprint(":"+fmt.Sprint(cfgflag.ListenPort)),
 		cfgflag.EnableHttps,
@@ -39,22 +43,17 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 	handlers.InitRouter(httpServer.Router, cfgfile, cfgflag)
 	httpServer.Start()
 
-	var logInfoServer string
-	if cfgflag.EnableHttps {
-		logInfoServer = "app server is listening on port %v using https"
-	} else {
-		logInfoServer = "app server is listening on port %v using http"
-	}
+	scheme := map[bool]string{true: "https", false: "http"}[cfgflag.EnableHttps]
+	loggerInstance.Info("app server is listening on port %v using %s", cfgflag.ListenPort, scheme)
 
-	logger.Info(logInfoServer, cfgflag.ListenPort)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		logger.Info("app server - run - signal: %s", s.String())
+		loggerInstance.Info("app server - run - signal: %s", s.String())
 	case err := <-httpServer.Notify():
-		logger.Error("app server error: %v", err.Error())
+		loggerInstance.Error("app server error: %v", err.Error())
 	}
 
 	if appDbCnx, err := sqliteAppDatabase.Db.DB(); err == nil {
@@ -62,6 +61,6 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag) {
 	}
 
 	if err := httpServer.Stop(); err != nil {
-		logger.Error("app server - stop - error: %v", err)
+		loggerInstance.Error("app server - stop - error: %v", err)
 	}
 }

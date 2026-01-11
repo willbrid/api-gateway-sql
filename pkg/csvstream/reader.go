@@ -15,7 +15,19 @@ type Block struct {
 	Lines     [][]string
 }
 
-func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
+type ICSVStream interface {
+	ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error)
+}
+
+type CSVStream struct {
+	iLogger logger.ILogger
+}
+
+func NewCSVStream(iLogger logger.ILogger) *CSVStream {
+	return &CSVStream{iLogger}
+}
+
+func (s *CSVStream) ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
 	var (
 		blockChannel chan *Block = make(chan *Block)
 		errorChannel chan error  = make(chan error)
@@ -40,7 +52,7 @@ func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error
 					break
 				}
 				if err != nil {
-					logger.Error("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
+					s.iLogger.Error("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
 					errorChannel <- err
 					return
 				}

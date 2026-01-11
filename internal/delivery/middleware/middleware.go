@@ -10,19 +10,27 @@ import (
 	"strings"
 )
 
-func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
+type AuthMiddleware struct {
+	iLogger logger.ILogger
+}
+
+func NewAuthMiddleware(iLogger logger.ILogger) *AuthMiddleware {
+	return &AuthMiddleware{iLogger}
+}
+
+func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		var auth string = req.Header.Get("Authorization")
 
 		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
-				logger.Error("no authorization header found")
+				a.iLogger.Error("no authorization header found")
 				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
 			if !strings.HasPrefix(auth, "Basic ") {
-				logger.Error("invalid authorization header")
+				a.iLogger.Error("invalid authorization header")
 				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
@@ -30,7 +38,7 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 			token := strings.TrimPrefix(auth, "Basic ")
 			decodedToken, err := base64.StdEncoding.DecodeString(token)
 			if err != nil {
-				logger.Error("failed to decode base64 token - %v", err)
+				a.iLogger.Error("failed to decode base64 token - %v", err)
 				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
@@ -39,7 +47,7 @@ func AuthMiddleware(next http.Handler, config *config.Config) http.Handler {
 			username := credentialParts[0]
 			password := credentialParts[1]
 			if username != config.ApiGatewaySQL.Auth.Username || password != config.ApiGatewaySQL.Auth.Password {
-				logger.Error("invalid username or password")
+				a.iLogger.Error("invalid username or password")
 				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}

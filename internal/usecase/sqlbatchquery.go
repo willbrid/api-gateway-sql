@@ -26,10 +26,18 @@ type SQLBatchQueryUsecase struct {
 	batchStatRepo *repository.BatchStatRepo
 	blockRepo     *repository.BlockRepo
 	config        *config.Config
+	iCSVStream    csvstream.ICSVStream
+	iLogger       logger.ILogger
 }
 
-func NewSQLBatchQueryUsecase(sqlQueryRepo *repository.SQLQueryRepo, batchStatRepo *repository.BatchStatRepo, blockRepo *repository.BlockRepo, config *config.Config) *SQLBatchQueryUsecase {
-	return &SQLBatchQueryUsecase{sqlQueryRepo, batchStatRepo, blockRepo, config}
+func NewSQLBatchQueryUsecase(
+	sqlQueryRepo *repository.SQLQueryRepo,
+	batchStatRepo *repository.BatchStatRepo,
+	blockRepo *repository.BlockRepo,
+	config *config.Config,
+	iCSVStream csvstream.ICSVStream,
+	iLogger logger.ILogger) *SQLBatchQueryUsecase {
+	return &SQLBatchQueryUsecase{sqlQueryRepo, batchStatRepo, blockRepo, config, iCSVStream, iLogger}
 }
 
 func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery *dto.SQLBatchQueryInput) error {
@@ -47,7 +55,7 @@ func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery
 		return err
 	}
 
-	blockChannel, errorChannel := csvstream.ReadCSVInBlock(sqlbatchquery.File, target.BufferSize)
+	blockChannel, errorChannel := squ.iCSVStream.ReadCSVInBlock(sqlbatchquery.File, target.BufferSize)
 	var openChannels int = 2
 	var wg sync.WaitGroup
 
@@ -100,7 +108,7 @@ func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInpu
 	newBlock := domain.NewBlock(blockDataInput.BLInput.StartLine, blockDataInput.BLInput.EndLine)
 	newBlock, err := squ.batchStatRepo.AddBlockToBatchStat(ctx, blockDataInput.BSInput, newBlock)
 	if err != nil {
-		logger.Error("failed to process block : %v", err.Error())
+		squ.iLogger.Error("failed to process block : %v", err.Error())
 		return
 	}
 
@@ -146,7 +154,7 @@ func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInpu
 				record, err = mapperfieldshelper.MapBatchFieldToValueLine(batchFields, line)
 
 				if err != nil {
-					logger.Error("failed to process batch in block : %v", err.Error())
+					squ.iLogger.Error("failed to process batch in block : %v", err.Error())
 					break
 				} else {
 					records = append(records, record)
@@ -156,15 +164,15 @@ func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInpu
 			if len(records) > 0 {
 				err = squ.sqlQueryRepo.ExecuteBatch(ctx, blockDataInput.TGInput.SqlQuery, records)
 				if err != nil {
-					logger.Error("failed to process batch in block : %v", err.Error())
+					squ.iLogger.Error("failed to process batch in block : %v", err.Error())
 					failureRange := domain.NewFailureRange(start, end)
 					if err = squ.blockRepo.Update(ctx, newBlock, failureRange, false); err != nil {
-						logger.Error("failed to process batch in block : %v", err.Error())
+						squ.iLogger.Error("failed to process batch in block : %v", err.Error())
 						return
 					}
 				} else {
 					if err = squ.blockRepo.Update(ctx, newBlock, nil, true); err != nil {
-						logger.Error("failed to process batch in block : %v", err.Error())
+						squ.iLogger.Error("failed to process batch in block : %v", err.Error())
 						return
 					}
 				}

@@ -5,6 +5,7 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/delivery/httphandler"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
+	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"fmt"
 	"net/http"
@@ -15,15 +16,17 @@ import (
 
 type Handler struct {
 	Usecases *usecase.Usecases
+	iLogger  logger.ILogger
 }
 
-func NewHandler(usecases *usecase.Usecases) *Handler {
-	return &Handler{usecases}
+func NewHandler(usecases *usecase.Usecases, iLogger logger.ILogger) *Handler {
+	return &Handler{usecases, iLogger}
 }
 
 func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *config.ConfigFlag) {
 	router.Use(func(subH http.Handler) http.Handler {
-		return middleware.AuthMiddleware(subH, cfg)
+		authMiddleware := middleware.NewAuthMiddleware(h.iLogger)
+		return authMiddleware.Authenticate(subH, cfg)
 	})
 
 	if cfg.ApiGatewaySQL.EnableSwagger {
@@ -38,7 +41,7 @@ func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *co
 		)).Methods("GET")
 	}
 
-	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg)
+	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg, h.iLogger)
 
 	router.HandleFunc("/healthz", httphandler.HandleHealthCheck).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/blocks/{uid}", httphandler.ApiGetBlockHandler).Methods("GET")

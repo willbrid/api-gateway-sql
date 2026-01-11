@@ -14,6 +14,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+type fakeLogger struct{}
+
+func (fl *fakeLogger) Info(message string, args ...any)    {}
+func (fl *fakeLogger) Warning(message string, args ...any) {}
+func (fl *fakeLogger) Error(message string, args ...any)   {}
+func (fl *fakeLogger) Fatal(message string, args ...any)   {}
+
 var yamlConfig []byte = []byte(`
 ---
 api_gateway_sql:
@@ -65,7 +72,8 @@ func triggerTest(t *testing.T, statusCode int, credential string) {
 		resp.WriteHeader(http.StatusOK)
 	}).Methods("GET")
 	router.Use(func(next http.Handler) http.Handler {
-		return middleware.AuthMiddleware(next, configLoaded)
+		authMiddleware := middleware.NewAuthMiddleware(&fakeLogger{})
+		return authMiddleware.Authenticate(next, configLoaded)
 	})
 	router.ServeHTTP(rr, req)
 

@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func MigrateAppDatabase(db *gorm.DB) {
+func MigrateAppDatabase(db *gorm.DB, iLogger logger.ILogger) {
 	err := db.AutoMigrate(&domain.BatchStat{}, &domain.Block{}, &domain.FailureRange{})
 	if err != nil {
-		logger.Error("error during migrations: %s", err.Error())
+		iLogger.Error("error during migrations: %s", err.Error())
 	}
 }
