@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+type IAuthMiddleware interface {
+	Authenticate(next http.Handler, config *config.Config) http.Handler
+}
+
 type AuthMiddleware struct {
 	iLogger logger.ILogger
 }

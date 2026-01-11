@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/delivery"
+	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
 	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
@@ -33,14 +34,15 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logg
 		ILogger:    loggerInstance,
 	})
 
-	handlers := delivery.NewHandler(usecases, loggerInstance)
 	httpServer := httpserver.NewServer(
 		fmt.Sprint(":"+fmt.Sprint(cfgflag.ListenPort)),
 		cfgflag.EnableHttps,
 		cfgflag.CertFile,
 		cfgflag.KeyFile,
 	)
-	handlers.InitRouter(httpServer.Router, cfgfile, cfgflag)
+	authMiddleware := middleware.NewAuthMiddleware(loggerInstance)
+	handlers := delivery.NewHandler(usecases, httpServer, authMiddleware, loggerInstance)
+	handlers.InitRouter(cfgfile, cfgflag)
 	httpServer.Start()
 
 	scheme := map[bool]string{true: "https", false: "http"}[cfgflag.EnableHttps]

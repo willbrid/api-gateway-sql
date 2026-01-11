@@ -5,25 +5,28 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/delivery/httphandler"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
+	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type Handler struct {
-	Usecases *usecase.Usecases
-	iLogger  logger.ILogger
+	Usecases        *usecase.Usecases
+	iServer         httpserver.IServer
+	iAuthMiddleware middleware.IAuthMiddleware
+	iLogger         logger.ILogger
 }
 
-func NewHandler(usecases *usecase.Usecases, iLogger logger.ILogger) *Handler {
-	return &Handler{usecases, iLogger}
+func NewHandler(usecases *usecase.Usecases, iServer httpserver.IServer, iAuthMiddleware middleware.IAuthMiddleware, iLogger logger.ILogger) *Handler {
+	return &Handler{usecases, iServer, iAuthMiddleware, iLogger}
 }
 
-func (h *Handler) InitRouter(router *mux.Router, cfg *config.Config, cfgflag *config.ConfigFlag) {
+func (h *Handler) InitRouter(cfg *config.Config, cfgflag *config.ConfigFlag) {
+	router := h.iServer.GetRouter()
 	router.Use(func(subH http.Handler) http.Handler {
 		authMiddleware := middleware.NewAuthMiddleware(h.iLogger)
 		return authMiddleware.Authenticate(subH, cfg)
