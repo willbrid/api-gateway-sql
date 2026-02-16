@@ -11,7 +11,7 @@ import (
 
 type PostgresDatabase struct{}
 
-func (_ *PostgresDatabase) Connect(db config.Database) (*gorm.DB, error) {
+func (*PostgresDatabase) Connect(db config.Database) (*gorm.DB, error) {
 	sslMode := "disable"
 	if db.Sslmode {
 		sslMode = "enable"

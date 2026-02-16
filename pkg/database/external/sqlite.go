@@ -13,7 +13,7 @@ type SqliteDatabase struct {
 	db *gorm.DB
 }
 
-func (_ *SqliteDatabase) Connect(db config.Database) (*gorm.DB, error) {
+func (*SqliteDatabase) Connect(db config.Database) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s.db", db.Dbname)
 
 	cnx, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})

@@ -11,7 +11,7 @@ import (
 
 type MySQLDatabase struct{}
 
-func (_ *MySQLDatabase) Connect(db config.Database) (*gorm.DB, error) {
+func (*MySQLDatabase) Connect(db config.Database) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%v)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=%vs", db.Username, db.Password, db.Host, db.Port, db.Dbname, db.Timeout.Seconds())
 
 	cnx, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
