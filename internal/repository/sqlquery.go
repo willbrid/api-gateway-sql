@@ -25,7 +25,7 @@ func (r *SQLQueryRepo) SetDB(db *gorm.DB) {
 
 func (r *SQLQueryRepo) CloseDB() {
 	if cnx, err := r.db.DB(); err == nil {
-		cnx.Close()
+		_ = cnx.Close()
 	}
 }
 

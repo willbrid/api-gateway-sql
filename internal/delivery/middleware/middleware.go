@@ -29,13 +29,13 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
 				a.iLogger.Error("no authorization header found")
-				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
+				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
 			if !strings.HasPrefix(auth, "Basic ") {
 				a.iLogger.Error("invalid authorization header")
-				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
+				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
@@ -43,7 +43,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 			decodedToken, err := base64.StdEncoding.DecodeString(token)
 			if err != nil {
 				a.iLogger.Error("failed to decode base64 token - %v", err)
-				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
+				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
@@ -52,7 +52,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 			password := credentialParts[1]
 			if username != config.ApiGatewaySQL.Auth.Username || password != config.ApiGatewaySQL.Auth.Password {
 				a.iLogger.Error("invalid username or password")
-				httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
+				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 		}

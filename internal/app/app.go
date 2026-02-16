@@ -59,7 +59,7 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logg
 	}
 
 	if appDbCnx, err := sqliteAppDatabase.Db.DB(); err == nil {
-		appDbCnx.Close()
+		_ = appDbCnx.Close()
 	}
 
 	if err := httpServer.Stop(); err != nil {

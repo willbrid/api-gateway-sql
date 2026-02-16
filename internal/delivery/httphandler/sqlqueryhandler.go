@@ -61,11 +61,11 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
 		h.iLogger.Error("failed to decode post params: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, sqlqueryOutput)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, sqlqueryOutput)
 }
 
 // ApiPostSqlHandler godoc
@@ -89,7 +89,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 	var postParams map[string]any
 	if err := json.NewDecoder(req.Body).Decode(&postParams); err != nil {
 		h.iLogger.Error("failed to decode post params: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, err.Error(), nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -101,11 +101,11 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
 		h.iLogger.Error("failed to execute single sql query: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, sqlqueryOutput)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, sqlqueryOutput)
 }
 
 // ApiPostInitDatabase godoc
@@ -129,14 +129,14 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 	file, _, err := req.FormFile("sqlfile")
 	if err != nil {
 		h.iLogger.Error("failed to read sql file: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
 
 	sqlBytes, err := io.ReadAll(file)
 	if err != nil {
 		h.iLogger.Error("failed to read sql file: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
 
@@ -147,11 +147,11 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 
 	if err := h.Usercases.ISQLQueryUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
 		h.iLogger.Error("error: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, nil)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, successAPIMessage, nil)
 }
 
 // ApiPostSqlBatchHandler godoc
@@ -175,16 +175,16 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 	csvfile, _, err := req.FormFile("csvfile")
 	if err != nil {
 		h.iLogger.Error("failed to read csv file: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
 		return
 	}
 
 	if isAllBatchStatClosed, err := h.Usercases.IBatchStatUsecase.IsAllBatchStatClosed(ctx); err != nil {
 		h.iLogger.Error("an error occurred: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	} else if isAllBatchStatClosed == false {
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errThereIsAnUnCompletedBatch, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errThereIsAnUnCompletedBatch, nil)
 		return
 	}
 
@@ -200,7 +200,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 		}
 	}()
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
 }
 
 // ApiListBatchStatsHandler godoc
@@ -228,13 +228,13 @@ func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *ht
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
 		h.iLogger.Error("failed to handle page_num param query: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
 		return
 	}
 	pageSize, err = strconv.Atoi(queries.Get("page_size"))
 	if err != nil {
 		h.iLogger.Error("failed to handle page_size param query: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
 		return
 	}
 
@@ -244,11 +244,11 @@ func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *ht
 	statsPaginatorResponse, err = h.Usercases.IBatchStatUsecase.ListBatchStats(ctx, pageRequest)
 	if err != nil {
 		h.iLogger.Error("failed to list batchstat: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, statsPaginatorResponse)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, statsPaginatorResponse)
 }
 
 // ApiGetBatchStatHandler godoc
@@ -270,11 +270,11 @@ func (h *HTTPHandler) ApiGetBatchStatHandler(resp http.ResponseWriter, req *http
 	batchStat, err := h.Usercases.IBatchStatUsecase.GetBatchStatById(ctx, uid)
 	if err != nil {
 		h.iLogger.Error("failed to get batchstat: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, batchStat)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, batchStat)
 }
 
 // ApiMarkCompletedBatchStatHandler godoc
@@ -297,11 +297,11 @@ func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter,
 	err = h.Usercases.IBatchStatUsecase.MarkCompletedBatchStat(ctx, uid)
 	if err != nil {
 		h.iLogger.Error("failed to mark compled a batchstat: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, nil)
 }
 
 // ApiListBlocksByBatchStatsHandler godoc
@@ -332,13 +332,13 @@ func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, 
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
 		h.iLogger.Error("failed to handle page_num param query: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
 		return
 	}
 	pageSize, err = strconv.Atoi(queries.Get("page_size"))
 	if err != nil {
 		h.iLogger.Error("failed to handle page_size param query: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
 		return
 	}
 
@@ -348,11 +348,11 @@ func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, 
 	blocksPaginatorResponse, err = h.Usercases.IBlockUsecase.ListBlocksByBatchStat(ctx, uid, pageRequest)
 	if err != nil {
 		h.iLogger.Error("failed to list blocks: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, blocksPaginatorResponse)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, blocksPaginatorResponse)
 }
 
 // ApiGetBlockHandler godoc
@@ -374,9 +374,9 @@ func (h *HTTPHandler) ApiGetBlockHandler(resp http.ResponseWriter, req *http.Req
 	block, err := h.Usercases.IBlockUsecase.GetBlockById(ctx, uid)
 	if err != nil {
 		h.iLogger.Error("failed to get block: %s", err.Error())
-		httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
+		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
 
-	httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, block)
+	_ = httpresponse.SendJSONResponse(resp, http.StatusOK, httpresponse.HTTPStatusOKMessage, block)
 }
