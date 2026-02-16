@@ -9,9 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type SqliteDatabase struct {
-	db *gorm.DB
-}
+type SqliteDatabase struct{}
 
 func (*SqliteDatabase) Connect(db config.Database) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s.db", db.Dbname)
