@@ -56,7 +56,7 @@ func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery
 	}
 
 	blockChannel, errorChannel := squ.iCSVStream.ReadCSVInBlock(sqlbatchquery.File, target.BufferSize)
-	var openChannels int = 2
+	openChannels := 2
 	var wg sync.WaitGroup
 
 	for openChannels > 0 {
@@ -120,13 +120,11 @@ func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInpu
 	squ.sqlQueryRepo.SetDB(cnx)
 	defer squ.sqlQueryRepo.CloseDB()
 
-	var (
-		wg                sync.WaitGroup
-		batchSize         int      = blockDataInput.TGInput.BatchSize
-		batchFields       []string = strings.Split(blockDataInput.TGInput.BatchFields, ";")
-		currentBufferSize int      = len(blockDataInput.BLInput.Lines)
-		numBatches        int      = currentBufferSize / batchSize
-	)
+	var wg sync.WaitGroup
+	batchSize := blockDataInput.TGInput.BatchSize
+	batchFields := strings.Split(blockDataInput.TGInput.BatchFields, ";")
+	currentBufferSize := len(blockDataInput.BLInput.Lines)
+	numBatches := currentBufferSize / batchSize
 
 	if currentBufferSize%batchSize != 0 || currentBufferSize < batchSize {
 		numBatches++
@@ -145,10 +143,10 @@ func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInpu
 		go func() {
 			defer wg.Done()
 			var (
-				record  map[string]any
-				records []map[string]any = make([]map[string]any, 0, len(batch))
-				err     error
+				record map[string]any
+				err    error
 			)
+			records := make([]map[string]any, 0, len(batch))
 
 			for _, line := range batch {
 				record, err = mapperfieldshelper.MapBatchFieldToValueLine(batchFields, line)

@@ -59,7 +59,7 @@ func setConfigDefaults(v *viper.Viper) {
 
 // ReadConfigFile reads configuration file and return viper instance
 func ReadConfigFile(filename string) (*viper.Viper, error) {
-	var viperInstance *viper.Viper = viper.New()
+	viperInstance := viper.New()
 
 	// Load configuration file
 	viperInstance.SetConfigType("yaml")
@@ -103,10 +103,8 @@ func LoadConfig(viperInstance *viper.Viper, validate *validator.Validate) (*Conf
 
 // GetTargetByName is a method of Config struct for retreive target by his name
 func (config *Config) GetTargetByName(targetName string) (Target, bool) {
-	var (
-		target Target
-		found  bool = false
-	)
+	var target Target
+	found := false
 
 	for _, targetItem := range config.ApiGatewaySQL.Targets {
 		if targetItem.Name == targetName {
@@ -121,10 +119,8 @@ func (config *Config) GetTargetByName(targetName string) (Target, bool) {
 
 // GetDatabaseByDataSourceName is a method of Config struct for retreive datasource by his name
 func (config *Config) GetDatabaseByDataSourceName(dataSourceName string) (Database, bool) {
-	var (
-		database Database
-		found    bool = false
-	)
+	var database Database
+	found := false
 
 	for _, databaseItem := range config.ApiGatewaySQL.Databases {
 		if databaseItem.Name == dataSourceName {

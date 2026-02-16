@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -50,11 +49,9 @@ func (h *HTTPHandler) HandleHealthCheck(resp http.ResponseWriter, req *http.Requ
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/{target} [get]
 func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars       map[string]string = mux.Vars(req)
-		targetName string            = vars["target"]
-		ctx        context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	targetName := vars["target"]
+	ctx := req.Context()
 
 	sqlqueryInput := &dto.SQLQueryInput{
 		TargetName: targetName,
@@ -85,11 +82,9 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/{target} [post]
 func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars       map[string]string = mux.Vars(req)
-		targetName string            = vars["target"]
-		ctx        context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	targetName := vars["target"]
+	ctx := req.Context()
 
 	var postParams map[string]any
 	if err := json.NewDecoder(req.Body).Decode(&postParams); err != nil {
@@ -127,11 +122,9 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/{datasource}/init [post]
 func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars           map[string]string = mux.Vars(req)
-		datasourceName string            = vars["datasource"]
-		ctx            context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	datasourceName := vars["datasource"]
+	ctx := req.Context()
 
 	file, _, err := req.FormFile("sqlfile")
 	if err != nil {
@@ -175,11 +168,9 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/{target}/batch [post]
 func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars       map[string]string = mux.Vars(req)
-		targetName string            = vars["target"]
-		ctx        context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	targetName := vars["target"]
+	ctx := req.Context()
 
 	csvfile, _, err := req.FormFile("csvfile")
 	if err != nil {
@@ -227,12 +218,12 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 // @Router       /api-gateway-sql/batchstats [get]
 func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *http.Request) {
 	var (
-		queries  url.Values = req.URL.Query()
 		pageNum  int
 		pageSize int
-		ctx      context.Context = req.Context()
 		err      error
 	)
+	queries := req.URL.Query()
+	ctx := req.Context()
 
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
@@ -272,11 +263,9 @@ func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *ht
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/batchstats/{uid} [get]
 func (h *HTTPHandler) ApiGetBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars map[string]string = mux.Vars(req)
-		uid  string            = vars["uid"]
-		ctx  context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	uid := vars["uid"]
+	ctx := req.Context()
 
 	batchStat, err := h.Usercases.IBatchStatUsecase.GetBatchStatById(ctx, uid)
 	if err != nil {
@@ -300,12 +289,10 @@ func (h *HTTPHandler) ApiGetBatchStatHandler(resp http.ResponseWriter, req *http
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/batchstats/{uid}/completed [get]
 func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars map[string]string = mux.Vars(req)
-		uid  string            = vars["uid"]
-		ctx  context.Context   = req.Context()
-		err  error
-	)
+	var err error
+	vars := mux.Vars(req)
+	uid := vars["uid"]
+	ctx := req.Context()
 
 	err = h.Usercases.IBatchStatUsecase.MarkCompletedBatchStat(ctx, uid)
 	if err != nil {
@@ -333,14 +320,14 @@ func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter,
 // @Router       /api-gateway-sql/batchstats/{uid}/blocks [get]
 func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, req *http.Request) {
 	var (
-		vars     map[string]string = mux.Vars(req)
-		uid      string            = vars["uid"]
-		queries  url.Values        = req.URL.Query()
 		pageNum  int
 		pageSize int
-		ctx      context.Context = req.Context()
 		err      error
 	)
+	vars := mux.Vars(req)
+	uid := vars["uid"]
+	queries := req.URL.Query()
+	ctx := req.Context()
 
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
@@ -380,11 +367,9 @@ func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, 
 // @Security     BasicAuth
 // @Router       /api-gateway-sql/blocks/{uid} [get]
 func (h *HTTPHandler) ApiGetBlockHandler(resp http.ResponseWriter, req *http.Request) {
-	var (
-		vars map[string]string = mux.Vars(req)
-		uid  string            = vars["uid"]
-		ctx  context.Context   = req.Context()
-	)
+	vars := mux.Vars(req)
+	uid := vars["uid"]
+	ctx := req.Context()
 
 	block, err := h.Usercases.IBlockUsecase.GetBlockById(ctx, uid)
 	if err != nil {

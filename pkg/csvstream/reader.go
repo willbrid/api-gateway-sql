@@ -28,13 +28,11 @@ func NewCSVStream(iLogger logger.ILogger) *CSVStream {
 }
 
 func (s *CSVStream) ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
-	var (
-		blockChannel chan *Block = make(chan *Block)
-		errorChannel chan error  = make(chan error)
-	)
+	blockChannel := make(chan *Block)
+	errorChannel := make(chan error)
 
 	go func() {
-		var numLine int = 0
+		numLine := 0
 		reader := csv.NewReader(file)
 
 		defer close(blockChannel)

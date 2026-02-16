@@ -24,7 +24,7 @@ func NewAuthMiddleware(iLogger logger.ILogger) *AuthMiddleware {
 
 func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		var auth string = req.Header.Get("Authorization")
+		auth := req.Header.Get("Authorization")
 
 		if config.ApiGatewaySQL.Auth.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
