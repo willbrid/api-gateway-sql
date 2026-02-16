@@ -1,6 +1,6 @@
 # Api-gateway-sql
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE) [![Build and Release](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml/badge.svg)](https://github.com/willbrid/api_gateway_sql/actions/workflows/cicd.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/willbrid/api_gateway_sql/blob/main/LICENSE) [![CI](https://github.com/willbrid/api-gateway-sql/actions/workflows/ci.yml/badge.svg)](https://github.com/willbrid/api-gateway-sql/actions/workflows/ci.yml)
 
 **Api-gateway-sql** is an application that allows SQL queries to be executed through an API. Each SQL query is defined in a configuration file and associated with a target. Query execution is performed by calling the corresponding API endpoint with the specified target.
 The application supports both simple and batch queries and is compatible with several popular database management systems (DBMS), including: MySQL, MariaDB, PostgreSQL, SQL Server, and SQLite.
