@@ -1,6 +1,6 @@
 module github.com/willbrid/api-gateway-sql
 
-go 1.25.4
+go 1.25.7
 
 require (
 	github.com/go-playground/validator/v10 v10.30.1
