@@ -64,7 +64,7 @@ func (d *BatchStatRepo) FindById(ctx context.Context, uid string) (*domain.Batch
 func (d *BatchStatRepo) CountUncompletedBatchStat(ctx context.Context) (int64, error) {
 	var total int64
 
-	err := d.appDb.WithContext(ctx).Model(&domain.BatchStat{}).Count(&total).Where("Completed = ?", false).Error
+	err := d.appDb.WithContext(ctx).Model(&domain.BatchStat{}).Where("Completed = ?", false).Limit(1).Count(&total).Error
 	if err != nil {
 		return 0, err
 	}
