@@ -77,10 +77,12 @@ curl -k -v -X POST -H 'Authorization: Basic dGVzdDp0ZXN0QHRlc3Q=' -H 'accept: ap
 
 This API allows you to execute a batch SQL query based on the target name (**target**), which contains the query configuration. The SQL query is parameterized using one or more parameters defined by the **{{}}** symbol, and the values ​​of these parameters must be sent via a CSV file in a POST request. The target configuration includes the following :
 
+- Setting the target name: **insert_batch_school**
 - Enabling batch mode (**multi: true**)
 - Defining the maximum size of a data block in the CSV file (**buffer_size: 50**)
 - Defining the maximum size of each batch within a block (**batch_size: 10**)
 - Defining the parameter fields, where each field corresponds to a column in the CSV file, in order (**batch_fields: "name;address"**)
+- Defining the parameter **sql** to : **"insert into school (name, address) values ({{name}}, {{address}})"**
 
 As a test, you can generate a 100-line CSV file with two columns : the first column contains the names of the schools, and the second their addresses. This CSV file can be generated using a Bash script available in this repository: [https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/generate_schools.sh](https://github.com/willbrid/api-gateway-sql/blob/main/fixtures/generate_schools.sh).
 
@@ -94,7 +96,7 @@ curl -fsSL https://github.com/willbrid/api_gateway_sql/raw/main/fixtures/generat
 
 ```
 chmod +x generate_schools.sh
-./generate_schools.sh 100
+./generate_schools.sh 100 /tmp/schools.csv
 ```
 
 This script will generate a csv file at the location **/tmp/schools.csv**.
