@@ -5,7 +5,7 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/domain"
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/confighelper"
-	"github.com/willbrid/api-gateway-sql/internal/pkg/mapperfieldshelper"
+	"github.com/willbrid/api-gateway-sql/internal/pkg/csvmapper"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
 	"github.com/willbrid/api-gateway-sql/pkg/database/external"
@@ -26,7 +26,6 @@ type SQLBatchQueryUsecase struct {
 	batchStatRepo *repository.BatchStatRepo
 	blockRepo     *repository.BlockRepo
 	config        *config.Config
-	iCSVStream    csvstream.ICSVStream
 	iLogger       logger.ILogger
 }
 
@@ -35,9 +34,8 @@ func NewSQLBatchQueryUsecase(
 	batchStatRepo *repository.BatchStatRepo,
 	blockRepo *repository.BlockRepo,
 	config *config.Config,
-	iCSVStream csvstream.ICSVStream,
 	iLogger logger.ILogger) *SQLBatchQueryUsecase {
-	return &SQLBatchQueryUsecase{sqlQueryRepo, batchStatRepo, blockRepo, config, iCSVStream, iLogger}
+	return &SQLBatchQueryUsecase{sqlQueryRepo, batchStatRepo, blockRepo, config, iLogger}
 }
 
 func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery *dto.SQLBatchQueryInput) error {
@@ -55,128 +53,94 @@ func (squ *SQLBatchQueryUsecase) ExecuteBatch(ctx context.Context, sqlbatchquery
 		return err
 	}
 
-	blockChannel, errorChannel := squ.iCSVStream.ReadCSVInBlock(sqlbatchquery.File, target.BufferSize)
-	openChannels := 2
+	blockCh, errCh := csvstream.ReadCSVInBlock(sqlbatchquery.File, target.BufferSize)
+
 	var wg sync.WaitGroup
-
-	for openChannels > 0 {
-		select {
-		case block, open := <-blockChannel:
-			if !open {
-				openChannels--
-				continue
-			}
-
-			blockDataInput := &dto.BlockDataInput{
+	for block := range blockCh {
+		wg.Add(1)
+		go func(b *csvstream.Block) {
+			defer wg.Done()
+			squ.processBlock(ctx, &dto.BlockDataInput{
 				BSInput: batchStat,
-				BLInput: block,
+				BLInput: b,
 				TGInput: target,
 				DBInput: cfgdb,
-			}
+			})
+		}(block)
+	}
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				squ.processBlock(ctx, blockDataInput)
-			}()
-
-		case err, open := <-errorChannel:
-			if !open {
-				openChannels--
-				continue
-			}
-
-			if err != nil {
-				if updateErr := squ.batchStatRepo.UpdateLastCompleted(ctx, batchStat); updateErr != nil {
-					return updateErr
-				}
-
-				return err
-			}
-		}
+	if err := <-errCh; err != nil {
+		wg.Wait()
+		return squ.finalizeWithError(ctx, batchStat, err)
 	}
 
 	wg.Wait()
+	return squ.batchStatRepo.UpdateLastCompleted(ctx, batchStat)
+}
+
+func (squ *SQLBatchQueryUsecase) finalizeWithError(ctx context.Context, batchStat *domain.BatchStat, cause error) error {
 	if updateErr := squ.batchStatRepo.UpdateLastCompleted(ctx, batchStat); updateErr != nil {
 		return updateErr
 	}
-
-	return nil
+	return cause
 }
 
-func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, blockDataInput *dto.BlockDataInput) {
-	newBlock := domain.NewBlock(blockDataInput.BLInput.StartLine, blockDataInput.BLInput.EndLine)
-	newBlock, err := squ.batchStatRepo.AddBlockToBatchStat(ctx, blockDataInput.BSInput, newBlock)
-	if err != nil {
-		squ.iLogger.Error("failed to process block : %v", err.Error())
-		return
-	}
-
-	cnx, err := external.NewDatabase(*blockDataInput.DBInput)
+func (squ *SQLBatchQueryUsecase) processBlock(ctx context.Context, input *dto.BlockDataInput) {
+	block, err := squ.initBlock(ctx, input)
 	if err != nil {
 		return
 	}
 
+	cnx, err := external.NewDatabase(*input.DBInput)
+	if err != nil {
+		squ.iLogger.Error("failed to open database connection: %v", err)
+		return
+	}
 	squ.sqlQueryRepo.SetDB(cnx)
 	defer squ.sqlQueryRepo.CloseDB()
 
+	batchFields := strings.Split(input.TGInput.BatchFields, ";")
+	batches := csvmapper.ChunkLines(input.BLInput.Lines, input.TGInput.BatchSize)
+
 	var wg sync.WaitGroup
-	batchSize := blockDataInput.TGInput.BatchSize
-	batchFields := strings.Split(blockDataInput.TGInput.BatchFields, ";")
-	currentBufferSize := len(blockDataInput.BLInput.Lines)
-	numBatches := currentBufferSize / batchSize
-
-	if currentBufferSize%batchSize != 0 || currentBufferSize < batchSize {
-		numBatches++
-	}
-
-	for i := 0; i < numBatches; i++ {
-		start := i * batchSize
-		end := start + batchSize
-		if end > currentBufferSize {
-			end = currentBufferSize
-		}
-
-		batch := blockDataInput.BLInput.Lines[start:end]
+	for i, batch := range batches {
 		wg.Add(1)
-
-		go func() {
+		go func(idx int, lines [][]string) {
 			defer wg.Done()
-			var (
-				record map[string]any
-				err    error
-			)
-			records := make([]map[string]any, 0, len(batch))
+			squ.processBatch(ctx, block, input, idx, lines, batchFields)
+		}(i, batch)
+	}
+	wg.Wait()
+}
 
-			for _, line := range batch {
-				record, err = mapperfieldshelper.MapBatchFieldToValueLine(batchFields, line)
+func (squ *SQLBatchQueryUsecase) initBlock(ctx context.Context, input *dto.BlockDataInput) (*domain.Block, error) {
+	block := domain.NewBlock(input.BLInput.StartLine, input.BLInput.EndLine)
+	block, err := squ.batchStatRepo.AddBlockToBatchStat(ctx, input.BSInput, block)
+	if err != nil {
+		squ.iLogger.Error("failed to register block: %v", err)
+	}
+	return block, err
+}
 
-				if err != nil {
-					squ.iLogger.Error("failed to process batch in block : %v", err.Error())
-					break
-				} else {
-					records = append(records, record)
-				}
-			}
-
-			if len(records) > 0 {
-				err = squ.sqlQueryRepo.ExecuteBatch(ctx, blockDataInput.TGInput.SqlQuery, records)
-				if err != nil {
-					squ.iLogger.Error("failed to process batch in block : %v", err.Error())
-					failureRange := domain.NewFailureRange(start, end)
-					if err = squ.blockRepo.Update(ctx, newBlock, failureRange, false); err != nil {
-						squ.iLogger.Error("failed to process batch in block : %v", err.Error())
-						return
-					}
-				} else {
-					if err = squ.blockRepo.Update(ctx, newBlock, nil, true); err != nil {
-						squ.iLogger.Error("failed to process batch in block : %v", err.Error())
-						return
-					}
-				}
-			}
-		}()
+func (squ *SQLBatchQueryUsecase) processBatch(ctx context.Context, block *domain.Block, input *dto.BlockDataInput, idx int, lines [][]string, batchFields []string) {
+	records, err := csvmapper.MapBatchLines(lines, batchFields)
+	if err != nil {
+		squ.iLogger.Error("failed to map batch lines: %v", err)
+		return
 	}
 
-	wg.Wait()
+	batchSize := input.TGInput.BatchSize
+	start, end := idx*batchSize, min(idx*batchSize+len(lines), len(input.BLInput.Lines))
+
+	if execErr := squ.sqlQueryRepo.ExecuteBatch(ctx, input.TGInput.SqlQuery, records); execErr != nil {
+		squ.iLogger.Error("failed to execute batch: %v", execErr)
+		if err := squ.blockRepo.Update(ctx, block, domain.NewFailureRange(start, end), false); err != nil {
+			squ.iLogger.Error("failed to update block with failure: %v", err)
+		}
+		return
+	}
+
+	if err := squ.blockRepo.Update(ctx, block, nil, true); err != nil {
+		squ.iLogger.Error("failed to update block on success: %v", err)
+	}
 }
