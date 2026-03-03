@@ -1,9 +1,8 @@
 package csvstream
 
 import (
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
-
 	"encoding/csv"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"strings"
@@ -15,19 +14,7 @@ type Block struct {
 	Lines     [][]string
 }
 
-type ICSVStream interface {
-	ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error)
-}
-
-type CSVStream struct {
-	iLogger logger.ILogger
-}
-
-func NewCSVStream(iLogger logger.ILogger) *CSVStream {
-	return &CSVStream{iLogger}
-}
-
-func (s *CSVStream) ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
+func ReadCSVInBlock(file multipart.File, blockSize int) (chan *Block, chan error) {
 	blockChannel := make(chan *Block)
 	errorChannel := make(chan error)
 
@@ -50,8 +37,7 @@ func (s *CSVStream) ReadCSVInBlock(file multipart.File, blockSize int) (chan *Bl
 					break
 				}
 				if err != nil {
-					s.iLogger.Error("failed to read a line %v - start of the block: %v - error: %s", i, block.StartLine, err.Error())
-					errorChannel <- err
+					errorChannel <- fmt.Errorf("failed to read a line %v - start of the block: %v - error: %w", i, block.StartLine, err)
 					return
 				}
 				block.Lines = append(block.Lines, strings.Split(record[0], ";"))
