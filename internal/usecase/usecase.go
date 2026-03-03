@@ -6,7 +6,6 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
-	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"context"
@@ -41,10 +40,9 @@ type Usecases struct {
 }
 
 type Deps struct {
-	Repos      *repository.Repositories
-	Config     *config.Config
-	ICSVStream csvstream.ICSVStream
-	ILogger    logger.ILogger
+	Repos   *repository.Repositories
+	Config  *config.Config
+	ILogger logger.ILogger
 }
 
 func NewUsecases(deps Deps) *Usecases {
@@ -54,7 +52,6 @@ func NewUsecases(deps Deps) *Usecases {
 		deps.Repos.IBatchStat.(*repository.BatchStatRepo),
 		deps.Repos.IBlock.(*repository.BlockRepo),
 		deps.Config,
-		deps.ICSVStream,
 		deps.ILogger,
 	)
 	batchStatUsecase := NewBatchStatUsecase(deps.Repos.IBatchStat.(*repository.BatchStatRepo))
