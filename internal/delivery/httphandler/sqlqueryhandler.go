@@ -179,7 +179,8 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 		return
 	}
 
-	if isAllBatchStatClosed, err := h.Usercases.IBatchStatUsecase.IsAllBatchStatClosed(ctx); err != nil {
+	isAllBatchStatClosed, err := h.Usercases.IBatchStatUsecase.IsAllBatchStatClosed(ctx)
+	if err != nil {
 		h.iLogger.Error("an error occurred: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
