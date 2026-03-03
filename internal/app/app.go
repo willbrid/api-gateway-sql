@@ -6,7 +6,6 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
-	"github.com/willbrid/api-gateway-sql/pkg/csvstream"
 	"github.com/willbrid/api-gateway-sql/pkg/database"
 	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
 	"github.com/willbrid/api-gateway-sql/pkg/logger"
@@ -26,12 +25,10 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logg
 	MigrateAppDatabase(sqliteAppDatabase.Db, loggerInstance)
 
 	repos := repository.NewRepositories(sqliteAppDatabase.Db)
-	csvstream := csvstream.NewCSVStream(loggerInstance)
 	usecases := usecase.NewUsecases(usecase.Deps{
-		Repos:      repos,
-		Config:     cfgfile,
-		ICSVStream: csvstream,
-		ILogger:    loggerInstance,
+		Repos:   repos,
+		Config:  cfgfile,
+		ILogger: loggerInstance,
 	})
 
 	httpServer := httpserver.NewServer(
