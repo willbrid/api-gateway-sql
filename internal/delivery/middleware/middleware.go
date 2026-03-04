@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"github.com/rs/zerolog"
+
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/httpresponse"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"encoding/base64"
 	"net/http"
@@ -15,11 +16,11 @@ type IAuthMiddleware interface {
 }
 
 type AuthMiddleware struct {
-	iLogger logger.ILogger
+	logger zerolog.Logger
 }
 
-func NewAuthMiddleware(iLogger logger.ILogger) *AuthMiddleware {
-	return &AuthMiddleware{iLogger}
+func NewAuthMiddleware(logger zerolog.Logger) *AuthMiddleware {
+	return &AuthMiddleware{logger}
 }
 
 func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) http.Handler {
@@ -28,13 +29,13 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 
 		if config.ApiGatewaySQL.Enabled && !strings.HasPrefix(req.RequestURI, "/swagger/") && !strings.HasPrefix(req.RequestURI, "/healthz") {
 			if auth == "" {
-				a.iLogger.Error("no authorization header found")
+				a.logger.Error().Msg("no authorization header found")
 				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
 
 			if !strings.HasPrefix(auth, "Basic ") {
-				a.iLogger.Error("invalid authorization header")
+				a.logger.Error().Msg("invalid authorization header")
 				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
@@ -42,7 +43,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 			token := strings.TrimPrefix(auth, "Basic ")
 			decodedToken, err := base64.StdEncoding.DecodeString(token)
 			if err != nil {
-				a.iLogger.Error("failed to decode base64 token - %v", err)
+				a.logger.Error().Err(err).Msg("failed to decode base64 token")
 				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}
@@ -51,7 +52,7 @@ func (a *AuthMiddleware) Authenticate(next http.Handler, config *config.Config) 
 			username := credentialParts[0]
 			password := credentialParts[1]
 			if username != config.ApiGatewaySQL.Username || password != config.ApiGatewaySQL.Password {
-				a.iLogger.Error("invalid username or password")
+				a.logger.Error().Msg("invalid username or password")
 				_ = httpresponse.SendJSONResponse(resp, http.StatusUnauthorized, "invalid credential", nil)
 				return
 			}

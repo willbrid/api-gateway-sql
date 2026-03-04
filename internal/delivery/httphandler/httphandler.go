@@ -1,17 +1,21 @@
 package httphandler
 
 import (
+	"github.com/rs/zerolog"
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
 )
 
 type HTTPHandler struct {
 	Usercases *usecase.Usecases
 	cfg       *config.Config
-	iLogger   logger.ILogger
+	logger    zerolog.Logger
 }
 
-func NewHTTPHandler(usercases *usecase.Usecases, cfg *config.Config, iLogger logger.ILogger) *HTTPHandler {
-	return &HTTPHandler{usercases, cfg, iLogger}
+func NewHTTPHandler(usercases *usecase.Usecases, cfg *config.Config, logger zerolog.Logger) *HTTPHandler {
+	return &HTTPHandler{
+		Usercases: usercases,
+		cfg:       cfg,
+		logger:    logger.With().Str("layer", "handler").Logger(),
+	}
 }

@@ -3,6 +3,7 @@ package middleware_test
 import (
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
+	"github.com/willbrid/api-gateway-sql/pkg/logging"
 
 	"bytes"
 	"net/http"
@@ -13,13 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 )
-
-type fakeLogger struct{}
-
-func (fl *fakeLogger) Info(message string, args ...any)    {}
-func (fl *fakeLogger) Warning(message string, args ...any) {}
-func (fl *fakeLogger) Error(message string, args ...any)   {}
-func (fl *fakeLogger) Fatal(message string, args ...any)   {}
 
 var yamlConfig []byte = []byte(`
 ---
@@ -66,13 +60,14 @@ func triggerTest(t *testing.T, statusCode int, credential string) {
 
 	rr := httptest.NewRecorder()
 
+	logger := logging.InitLogger()
 	router := mux.NewRouter()
 	router.HandleFunc("/api-gateway-sql/{targetname}", func(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/json")
 		resp.WriteHeader(http.StatusOK)
 	}).Methods("GET")
 	router.Use(func(next http.Handler) http.Handler {
-		authMiddleware := middleware.NewAuthMiddleware(&fakeLogger{})
+		authMiddleware := middleware.NewAuthMiddleware(logger)
 		return authMiddleware.Authenticate(next, configLoaded)
 	})
 	router.ServeHTTP(rr, req)

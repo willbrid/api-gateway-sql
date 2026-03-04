@@ -1,6 +1,8 @@
 package app
 
 import (
+	"github.com/rs/zerolog"
+
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/delivery"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
@@ -8,7 +10,6 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
 	"github.com/willbrid/api-gateway-sql/pkg/database"
 	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"fmt"
 	"os"
@@ -16,19 +17,23 @@ import (
 	"syscall"
 )
 
-func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logger.ILogger) {
+func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, logger zerolog.Logger) {
 	sqliteAppDatabase, err := database.NewSqliteAppDatabase(cfgfile.ApiGatewaySQL.Sqlitedb)
 	if err != nil {
-		loggerInstance.Error("app server database error: %v", err.Error())
+		logger.Error().Err(err).Msg("failed to init database server")
 		return
 	}
-	MigrateAppDatabase(sqliteAppDatabase.Db, loggerInstance)
 
-	repos := repository.NewRepositories(sqliteAppDatabase.Db)
+	if err := MigrateAppDatabase(sqliteAppDatabase.Db); err != nil {
+		logger.Error().Err(err).Msg("failed to init database server")
+		return
+	}
+
+	repos := repository.NewRepositories(sqliteAppDatabase.Db, logger)
 	usecases := usecase.NewUsecases(usecase.Deps{
-		Repos:   repos,
-		Config:  cfgfile,
-		ILogger: loggerInstance,
+		Repos:  repos,
+		Config: cfgfile,
+		Logger: logger,
 	})
 
 	httpServer := httpserver.NewServer(
@@ -37,22 +42,22 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logg
 		cfgflag.CertFile,
 		cfgflag.KeyFile,
 	)
-	authMiddleware := middleware.NewAuthMiddleware(loggerInstance)
-	handlers := delivery.NewHandler(usecases, httpServer, authMiddleware, loggerInstance)
+	authMiddleware := middleware.NewAuthMiddleware(logger)
+	handlers := delivery.NewHandler(usecases, httpServer, authMiddleware, logger)
 	handlers.InitRouter(cfgfile, cfgflag)
 	httpServer.Start()
 
 	scheme := map[bool]string{true: "https", false: "http"}[cfgflag.EnableHttps]
-	loggerInstance.Info("app server is listening on port %v using %s", cfgflag.ListenPort, scheme)
+	logger.Info().Str("scheme", scheme).Int("port", cfgflag.ListenPort).Msg("app server starting")
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		loggerInstance.Info("app server - run - signal: %s", s.String())
+		logger.Info().Str("signal", s.String()).Msg("app server stopping")
 	case err := <-httpServer.Notify():
-		loggerInstance.Error("app server error: %v", err.Error())
+		logger.Error().Err(err).Msg("app server stopping")
 	}
 
 	if appDbCnx, err := sqliteAppDatabase.Db.DB(); err == nil {
@@ -60,6 +65,6 @@ func Run(cfgfile *config.Config, cfgflag *config.ConfigFlag, loggerInstance logg
 	}
 
 	if err := httpServer.Stop(); err != nil {
-		loggerInstance.Error("app server - stop - error: %v", err)
+		logger.Error().Err(err).Msg("app server stopping")
 	}
 }

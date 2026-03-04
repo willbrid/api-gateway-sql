@@ -1,12 +1,13 @@
 package delivery
 
 import (
+	"github.com/rs/zerolog"
+
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/httphandler"
 	"github.com/willbrid/api-gateway-sql/internal/delivery/middleware"
 	"github.com/willbrid/api-gateway-sql/internal/usecase"
 	"github.com/willbrid/api-gateway-sql/pkg/httpserver"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"fmt"
 	"net/http"
@@ -18,17 +19,17 @@ type Handler struct {
 	Usecases        *usecase.Usecases
 	iServer         httpserver.IServer
 	iAuthMiddleware middleware.IAuthMiddleware
-	iLogger         logger.ILogger
+	logger          zerolog.Logger
 }
 
-func NewHandler(usecases *usecase.Usecases, iServer httpserver.IServer, iAuthMiddleware middleware.IAuthMiddleware, iLogger logger.ILogger) *Handler {
-	return &Handler{usecases, iServer, iAuthMiddleware, iLogger}
+func NewHandler(usecases *usecase.Usecases, iServer httpserver.IServer, iAuthMiddleware middleware.IAuthMiddleware, logger zerolog.Logger) *Handler {
+	return &Handler{usecases, iServer, iAuthMiddleware, logger}
 }
 
 func (h *Handler) InitRouter(cfg *config.Config, cfgflag *config.ConfigFlag) {
 	router := h.iServer.GetRouter()
 	router.Use(func(subH http.Handler) http.Handler {
-		authMiddleware := middleware.NewAuthMiddleware(h.iLogger)
+		authMiddleware := middleware.NewAuthMiddleware(h.logger)
 		return authMiddleware.Authenticate(subH, cfg)
 	})
 
@@ -44,7 +45,7 @@ func (h *Handler) InitRouter(cfg *config.Config, cfgflag *config.ConfigFlag) {
 		)).Methods("GET")
 	}
 
-	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg, h.iLogger)
+	httphandler := httphandler.NewHTTPHandler(h.Usecases, cfg, h.logger)
 
 	router.HandleFunc("/healthz", httphandler.HandleHealthCheck).Methods("GET")
 	router.HandleFunc("/api-gateway-sql/blocks/{uid}", httphandler.ApiGetBlockHandler).Methods("GET")

@@ -60,7 +60,7 @@ func (h *HTTPHandler) ApiGetSqlHandler(resp http.ResponseWriter, req *http.Reque
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		h.iLogger.Error("failed to decode post params: %s", err.Error())
+		h.logger.Error().Msgf("failed to decode post params: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -88,7 +88,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	var postParams map[string]any
 	if err := json.NewDecoder(req.Body).Decode(&postParams); err != nil {
-		h.iLogger.Error("failed to decode post params: %s", err.Error())
+		h.logger.Error().Msgf("failed to decode post params: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -100,7 +100,7 @@ func (h *HTTPHandler) ApiPostSqlHandler(resp http.ResponseWriter, req *http.Requ
 
 	sqlqueryOutput, err := h.Usercases.ISQLQueryUsecase.ExecuteSingle(ctx, sqlqueryInput)
 	if err != nil {
-		h.iLogger.Error("failed to execute single sql query: %s", err.Error())
+		h.logger.Error().Msgf("failed to execute single sql query: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, failedAPIMessage, nil)
 		return
 	}
@@ -128,14 +128,14 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 
 	file, _, err := req.FormFile("sqlfile")
 	if err != nil {
-		h.iLogger.Error("failed to read sql file: %s", err.Error())
+		h.logger.Error().Msgf("failed to read sql file: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
 
 	sqlBytes, err := io.ReadAll(file)
 	if err != nil {
-		h.iLogger.Error("failed to read sql file: %s", err.Error())
+		h.logger.Error().Msgf("failed to read sql file: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadSQLFile, nil)
 		return
 	}
@@ -146,7 +146,7 @@ func (h *HTTPHandler) ApiPostInitDatabase(resp http.ResponseWriter, req *http.Re
 	}
 
 	if err := h.Usercases.ISQLQueryUsecase.ExecuteInit(ctx, sqlInitDatabaseInput); err != nil {
-		h.iLogger.Error("error: %s", err.Error())
+		h.logger.Error().Msgf("error: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, errUnableToExecuteInitSqlQuery, nil)
 		return
 	}
@@ -174,14 +174,14 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 
 	csvfile, _, err := req.FormFile("csvfile")
 	if err != nil {
-		h.iLogger.Error("failed to read csv file: %s", err.Error())
+		h.logger.Error().Msgf("failed to read csv file: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, errUnableToReadCSVFile, nil)
 		return
 	}
 
 	isAllBatchStatClosed, err := h.Usercases.IBatchStatUsecase.IsAllBatchStatClosed(ctx)
 	if err != nil {
-		h.iLogger.Error("an error occurred: %s", err.Error())
+		h.logger.Error().Msgf("an error occurred: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	} else if !isAllBatchStatClosed {
@@ -197,7 +197,7 @@ func (h *HTTPHandler) ApiPostSqlBatchHandler(resp http.ResponseWriter, req *http
 	go func() {
 		ctx := context.Background()
 		if err := h.Usercases.ISQLBatchQueryUsecase.ExecuteBatch(ctx, sqlBatchQueryInput); err != nil {
-			h.iLogger.Error("failed to process batch: %s", err.Error())
+			h.logger.Error().Msgf("failed to process batch: %s", err.Error())
 		}
 	}()
 
@@ -228,13 +228,13 @@ func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *ht
 
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
-		h.iLogger.Error("failed to handle page_num param query: %s", err.Error())
+		h.logger.Error().Msgf("failed to handle page_num param query: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
 		return
 	}
 	pageSize, err = strconv.Atoi(queries.Get("page_size"))
 	if err != nil {
-		h.iLogger.Error("failed to handle page_size param query: %s", err.Error())
+		h.logger.Error().Msgf("failed to handle page_size param query: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
 		return
 	}
@@ -244,7 +244,7 @@ func (h *HTTPHandler) ApiListBatchStatsHandler(resp http.ResponseWriter, req *ht
 
 	statsPaginatorResponse, err = h.Usercases.IBatchStatUsecase.ListBatchStats(ctx, pageRequest)
 	if err != nil {
-		h.iLogger.Error("failed to list batchstat: %s", err.Error())
+		h.logger.Error().Msgf("failed to list batchstat: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
@@ -270,7 +270,7 @@ func (h *HTTPHandler) ApiGetBatchStatHandler(resp http.ResponseWriter, req *http
 
 	batchStat, err := h.Usercases.IBatchStatUsecase.GetBatchStatById(ctx, uid)
 	if err != nil {
-		h.iLogger.Error("failed to get batchstat: %s", err.Error())
+		h.logger.Error().Msgf("failed to get batchstat: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
@@ -297,7 +297,7 @@ func (h *HTTPHandler) ApiMarkCompletedBatchStatHandler(resp http.ResponseWriter,
 
 	err = h.Usercases.IBatchStatUsecase.MarkCompletedBatchStat(ctx, uid)
 	if err != nil {
-		h.iLogger.Error("failed to mark compled a batchstat: %s", err.Error())
+		h.logger.Error().Msgf("failed to mark compled a batchstat: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
@@ -332,13 +332,13 @@ func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, 
 
 	pageNum, err = strconv.Atoi(queries.Get("page_num"))
 	if err != nil {
-		h.iLogger.Error("failed to handle page_num param query: %s", err.Error())
+		h.logger.Error().Msgf("failed to handle page_num param query: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_num", nil)
 		return
 	}
 	pageSize, err = strconv.Atoi(queries.Get("page_size"))
 	if err != nil {
-		h.iLogger.Error("failed to handle page_size param query: %s", err.Error())
+		h.logger.Error().Msgf("failed to handle page_size param query: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusBadRequest, "Unable to handle page_size", nil)
 		return
 	}
@@ -348,7 +348,7 @@ func (h *HTTPHandler) ApiListBlocksByBatchStatHandler(resp http.ResponseWriter, 
 
 	blocksPaginatorResponse, err = h.Usercases.IBlockUsecase.ListBlocksByBatchStat(ctx, uid, pageRequest)
 	if err != nil {
-		h.iLogger.Error("failed to list blocks: %s", err.Error())
+		h.logger.Error().Msgf("failed to list blocks: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
@@ -374,7 +374,7 @@ func (h *HTTPHandler) ApiGetBlockHandler(resp http.ResponseWriter, req *http.Req
 
 	block, err := h.Usercases.IBlockUsecase.GetBlockById(ctx, uid)
 	if err != nil {
-		h.iLogger.Error("failed to get block: %s", err.Error())
+		h.logger.Error().Msgf("failed to get block: %s", err.Error())
 		_ = httpresponse.SendJSONResponse(resp, http.StatusInternalServerError, httpresponse.HTTPStatusInternalServerErrorMessage, nil)
 		return
 	}
