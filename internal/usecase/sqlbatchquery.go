@@ -129,7 +129,7 @@ func (squ *SQLBatchQueryUsecase) initBlock(ctx context.Context, input *dto.Block
 		return nil, err
 	}
 
-	squ.logger.Info().Msg("init block completed")
+	squ.logger.Info().Int("block_startline", block.StartLine).Int("block_endline", block.EndLine).Msg("init block completed")
 	return block, nil
 }
 
