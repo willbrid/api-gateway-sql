@@ -18,7 +18,7 @@ type SQLQueryRepo struct {
 }
 
 func NewSQLQueryRepo(logger zerolog.Logger) *SQLQueryRepo {
-	return &SQLQueryRepo{logger: logger}
+	return &SQLQueryRepo{logger: logger.With().Str("layer", "repository").Str("component", "sqlqueryrepo").Logger()}
 }
 
 func (r *SQLQueryRepo) SetDB(db *gorm.DB) {
@@ -29,7 +29,7 @@ func (r *SQLQueryRepo) CloseDB() {
 	if cnx, err := r.db.DB(); err == nil {
 		_ = cnx.Close()
 	} else {
-		r.logger.Error().Err(err).Str("domain", "sqlquery").Msg("unable to close database session")
+		r.logger.Error().Err(err).Msg("unable to close database session")
 	}
 }
 
@@ -39,7 +39,7 @@ func (r *SQLQueryRepo) ExecuteInit(ctx context.Context, sqlQueries []string) err
 			query := strings.TrimSpace(sqlQuery)
 			if query != "" {
 				if err := tx.Exec(query).Error; err != nil {
-					r.logger.Error().Err(err).Str("domain", "sqlquery").Msg("failed to execute transaction for schema creation")
+					r.logger.Error().Err(err).Msg("failed to execute transaction for schema creation")
 					return err
 				}
 			}
@@ -65,7 +65,7 @@ func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[str
 
 	tx := cnx.Exec(parsedQuery, parsedParams...)
 	if tx.Error != nil {
-		r.logger.Error().Err(tx.Error).Str("domain", "sqlquery").Str("query", parsedQuery).Msg("failed to execute single query")
+		r.logger.Error().Err(tx.Error).Str("query", parsedQuery).Msg("failed to execute single query")
 		return nil, tx.Error
 	}
 
@@ -83,7 +83,7 @@ func (r *SQLQueryRepo) ExecuteBatch(ctx context.Context, query string, params []
 		for _, param := range params {
 			parsedQuery, parsedParams := sqlqueryhelper.TransformQuery(query, param)
 			if err := tx.Exec(parsedQuery, parsedParams...).Error; err != nil {
-				r.logger.Error().Err(tx.Error).Str("domain", "sqlquery").Str("query", parsedQuery).Msg("failed to execute batch query")
+				r.logger.Error().Err(tx.Error).Str("query", parsedQuery).Msg("failed to execute batch query")
 				return err
 			}
 		}

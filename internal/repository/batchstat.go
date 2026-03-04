@@ -16,7 +16,10 @@ type BatchStatRepo struct {
 }
 
 func NewBatchStatRepo(appDb *gorm.DB, logger zerolog.Logger) *BatchStatRepo {
-	return &BatchStatRepo{appDb, logger}
+	return &BatchStatRepo{
+		appDb:  appDb,
+		logger: logger.With().Str("layer", "repository").Str("component", "batchstatrepo").Logger(),
+	}
 }
 
 func (d *BatchStatRepo) Create(ctx context.Context, targetName string) (*domain.BatchStat, error) {
@@ -29,7 +32,7 @@ func (d *BatchStatRepo) Create(ctx context.Context, targetName string) (*domain.
 	}
 
 	if err := d.appDb.WithContext(ctx).Create(&batchStat).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to create batchStat")
+		d.logger.Error().Err(err).Msg("failed to create batchStat")
 		return nil, err
 	}
 
@@ -40,7 +43,7 @@ func (d *BatchStatRepo) UpdateLastCompleted(ctx context.Context, batchStat *doma
 	batchStat.Completed = true
 
 	if err := d.appDb.WithContext(ctx).Save(&batchStat).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to update batchStat")
+		d.logger.Error().Err(err).Msg("failed to update batchStat")
 		return err
 	}
 
@@ -49,12 +52,12 @@ func (d *BatchStatRepo) UpdateLastCompleted(ctx context.Context, batchStat *doma
 
 func (d *BatchStatRepo) AddBlockToBatchStat(ctx context.Context, bs *domain.BatchStat, block *domain.Block) (*domain.Block, error) {
 	if err := d.appDb.WithContext(ctx).Model(bs).Association("Blocks").Append(block); err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to associate block to batchStat")
+		d.logger.Error().Err(err).Msg("failed to associate block to batchStat")
 		return nil, err
 	}
 
 	if err := d.appDb.Save(bs).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to save batchStat after adding block")
+		d.logger.Error().Err(err).Msg("failed to save batchStat after adding block")
 		return nil, err
 	}
 
@@ -65,7 +68,7 @@ func (d *BatchStatRepo) FindById(ctx context.Context, uid string) (*domain.Batch
 	batch := domain.BatchStat{}
 
 	if err := d.appDb.WithContext(ctx).First(&batch, "id = ?", uid).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Str("batch_id", uid).Msg("failed to find batchStat by id")
+		d.logger.Error().Err(err).Str("batch_id", uid).Msg("failed to find batchStat by id")
 		return nil, err
 	}
 
@@ -77,7 +80,7 @@ func (d *BatchStatRepo) CountUncompletedBatchStat(ctx context.Context) (int64, e
 
 	err := d.appDb.WithContext(ctx).Model(&domain.BatchStat{}).Where("Completed = ?", false).Limit(1).Count(&total).Error
 	if err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to count uncompleted batchStat")
+		d.logger.Error().Err(err).Msg("failed to count uncompleted batchStat")
 		return 0, err
 	}
 
@@ -91,12 +94,12 @@ func (d *BatchStatRepo) FindAll(ctx context.Context, offset, limit int) ([]*doma
 	tx := d.appDb.WithContext(ctx).Model(&domain.BatchStat{})
 
 	if err := tx.Count(&total).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to count all batchStat")
+		d.logger.Error().Err(err).Msg("failed to count all batchStat")
 		return nil, 0, err
 	}
 
 	if err := tx.Order("created_at DESC").Find(&batchStats).Offset(offset).Limit(limit).Error; err != nil {
-		d.logger.Error().Err(err).Str("domain", "batchStat").Msg("failed to fetch batchStat")
+		d.logger.Error().Err(err).Msg("failed to fetch batchStat")
 		return nil, 0, err
 	}
 
