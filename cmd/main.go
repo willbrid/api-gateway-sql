@@ -4,7 +4,7 @@ import (
 	"github.com/willbrid/api-gateway-sql/config"
 	_ "github.com/willbrid/api-gateway-sql/docs"
 	"github.com/willbrid/api-gateway-sql/internal/app"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
+	"github.com/willbrid/api-gateway-sql/pkg/logging"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -19,24 +19,26 @@ import (
 // @securityDefinitions.basic BasicAuth
 func main() {
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	loggerInstance := logger.NewLogger()
+	logger := logging.InitLogger()
 
 	configFlag, err := config.LoadConfigFlag(validate)
 	if err != nil {
-		loggerInstance.Fatal("failed to load configuration flags: %v", err.Error())
+		logger.Error().Err(err).Msg("failed to load configuration flags")
+		return
 	}
 
 	viperInstance, err := config.ReadConfigFile(configFlag.ConfigFile)
 	if err != nil {
-		loggerInstance.Fatal("failed to read configuration file: %v", err.Error())
+		logger.Error().Err(err).Msg("failed to read configuration file")
+		return
 	}
 
 	configLoaded, err := config.LoadConfig(viperInstance, validate)
 	if err != nil {
-		loggerInstance.Fatal("failed to load configuration file: %v", err.Error())
+		logger.Error().Err(err).Msg("failed to load configuration file")
+		return
 	}
 
-	loggerInstance.Info("configuration file '%s' was loaded successfully", configFlag.ConfigFile)
-
-	app.Run(configLoaded, configFlag, loggerInstance)
+	logger.Info().Str("config_file", configFlag.ConfigFile).Msg("configuration file was loaded successfully")
+	app.Run(configLoaded, configFlag, logger)
 }
