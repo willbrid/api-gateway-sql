@@ -69,7 +69,7 @@ func ReadConfigFile(filename string) (*viper.Viper, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return nil, fmt.Errorf("configuration file '%s' not found", filename)
 		} else {
-			return nil, err
+			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
 	}
 
@@ -84,17 +84,17 @@ func LoadConfig(viperInstance *viper.Viper, validate *validator.Validate) (*Conf
 	// Parse configuration file to Config struct
 	var config Config
 	if err := viperInstance.Unmarshal(&config); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to unmarshal config struct: %w", err)
 	}
 
 	// Validate config struct
 	if err := validate.Struct(config); err != nil {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
-			return nil, err
+			return nil, fmt.Errorf("validation failed with error: %w", err)
 		}
 
 		for _, err := range err.(validator.ValidationErrors) {
-			return nil, fmt.Errorf("validation failed on field '%s' for condition '%s'", err.Field(), err.Tag())
+			return nil, fmt.Errorf("field validation failed with error: %w", err)
 		}
 	}
 

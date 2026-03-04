@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
@@ -37,12 +38,12 @@ func LoadConfigFlag(validate *validator.Validate) (*ConfigFlag, error) {
 
 	boolEnableHttps, err := strconv.ParseBool(enableHttps)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse enableHttps flag: %w", err)
 	}
 
 	cfgflag := newConfigFlag(configFile, listenPort, boolEnableHttps, certFile, keyFile)
 	if err := validate.Struct(cfgflag); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to validate config flag: %w", err)
 	}
 
 	return cfgflag, nil

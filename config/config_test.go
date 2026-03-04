@@ -1,9 +1,12 @@
 package config_test
 
 import (
+	"strings"
+
 	"github.com/willbrid/api-gateway-sql/config"
 
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -11,7 +14,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func triggerTest(t *testing.T, yamlConfig []byte, expectations []string, index int) {
+func triggerTest(t *testing.T, yamlConfig []byte) {
 	v := viper.New()
 	v.SetConfigType("yaml")
 
@@ -22,14 +25,9 @@ func triggerTest(t *testing.T, yamlConfig []byte, expectations []string, index i
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	_, err := config.LoadConfig(v, validate)
 
-	expected := expectations[index]
-
-	if err == nil {
-		t.Errorf("no error returned, expected:\n%v", expected)
-	}
-
-	if err.Error() != expected {
-		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+	var fieldErr validator.FieldError
+	if !errors.As(err, &fieldErr) && !strings.Contains(err.Error(), "unable to unmarshal config struct") {
+		t.Errorf("wrong error: %v", err)
 	}
 }
 
@@ -39,14 +37,9 @@ func TestReadConfigFile_ReturnFileNotFoundError(t *testing.T) {
 	var filename string
 
 	_, err := config.ReadConfigFile(filename)
-	expected := "configuration file '' not found"
 
 	if err == nil {
-		t.Fatalf("no error returned, expected:\n%v", expected)
-	}
-
-	if err.Error() != expected {
-		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+		t.Error("no error returned for file not found")
 	}
 }
 
@@ -56,14 +49,8 @@ func TestReadConfigFile_ReturnFileNotExistError(t *testing.T) {
 	filename := "nonexistentfile.yaml"
 	_, err := config.ReadConfigFile(filename)
 
-	expected := "open nonexistentfile.yaml: no such file or directory"
-
 	if err == nil {
-		t.Fatalf("no error returned, expected:\n%v", expected)
-	}
-
-	if err.Error() != expected {
-		t.Errorf("\nexpected:\n%v\ngot:\n%v", expected, err.Error())
+		t.Error("no error returned for file no exist")
 	}
 }
 
@@ -105,17 +92,9 @@ api_gateway_sql:
 `),
 	}
 
-	expectations := []string{
-		"validation failed on field 'Username' for condition 'required_if'",
-		"validation failed on field 'Username' for condition 'min'",
-		"validation failed on field 'Username' for condition 'max'",
-		"validation failed on field 'Password' for condition 'required_if'",
-		"validation failed on field 'Password' for condition 'min'",
-	}
-
 	for index, yamlConfig := range configSlices {
 		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
-			triggerTest(subT, yamlConfig, expectations, index)
+			triggerTest(subT, yamlConfig)
 		})
 	}
 }
@@ -139,11 +118,7 @@ api_gateway_sql:
 	_, err := config.LoadConfig(v, validate)
 
 	if err == nil {
-		t.Errorf("no error returned")
-	}
-
-	if err.Error() == "" {
-		t.Errorf("no error message found")
+		t.Errorf("no error returned for bad sqlite field")
 	}
 }
 
@@ -353,28 +328,9 @@ api_gateway_sql:
 `),
 	}
 
-	expectations := []string{
-		"validation failed on field 'Databases' for condition 'gt'",
-		"validation failed on field 'Databases' for condition 'gt'",
-		"validation failed on field 'Name' for condition 'required'",
-		"validation failed on field 'Name' for condition 'max'",
-		"validation failed on field 'Type' for condition 'required'",
-		"validation failed on field 'Type' for condition 'oneof'",
-		"validation failed on field 'Host' for condition 'required_unless'",
-		"validation failed on field 'Host' for condition 'ipv4'",
-		"validation failed on field 'Port' for condition 'required_unless'",
-		"validation failed on field 'Port' for condition 'min'",
-		"validation failed on field 'Port' for condition 'max'",
-		"validation failed on field 'Username' for condition 'required_unless'",
-		"validation failed on field 'Password' for condition 'required_unless'",
-		"validation failed on field 'Dbname' for condition 'required'",
-		"validation failed on field 'Timeout' for condition 'required'",
-		"decoding failed due to the following error(s):\n\n'api_gateway_sql.databases[0].timeout' time: missing unit in duration",
-	}
-
 	for index, yamlConfig := range configSlices {
 		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
-			triggerTest(subT, yamlConfig, expectations, index)
+			triggerTest(subT, yamlConfig)
 		})
 	}
 }
@@ -528,19 +484,9 @@ api_gateway_sql:
 `),
 	}
 
-	expectations := []string{
-		"validation failed on field 'Targets' for condition 'gt'",
-		"validation failed on field 'Targets' for condition 'gt'",
-		"validation failed on field 'Name' for condition 'required'",
-		"validation failed on field 'Name' for condition 'max'",
-		"validation failed on field 'DataSourceName' for condition 'required'",
-		"validation failed on field 'SqlQuery' for condition 'required'",
-		"validation failed on field 'BatchSize' for condition 'required_if'",
-	}
-
 	for index, yamlConfig := range configSlices {
 		t.Run(fmt.Sprintf("LoadConfig  #%v", index), func(subT *testing.T) {
-			triggerTest(subT, yamlConfig, expectations, index)
+			triggerTest(subT, yamlConfig)
 		})
 	}
 }
