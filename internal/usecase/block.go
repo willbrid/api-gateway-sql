@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"github.com/rs/zerolog"
+
 	"github.com/willbrid/api-gateway-sql/internal/domain"
 	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
@@ -9,11 +11,15 @@ import (
 )
 
 type BlockUsecase struct {
-	repo *repository.BlockRepo
+	repo   *repository.BlockRepo
+	logger zerolog.Logger
 }
 
-func NewBlockUsecase(blockRepo *repository.BlockRepo) *BlockUsecase {
-	return &BlockUsecase{blockRepo}
+func NewBlockUsecase(blockRepo *repository.BlockRepo, logger zerolog.Logger) *BlockUsecase {
+	return &BlockUsecase{
+		repo:   blockRepo,
+		logger: logger.With().Str("layer", "usecase").Str("component", "block").Logger(),
+	}
 }
 
 func (bu *BlockUsecase) ListBlocksByBatchStat(ctx context.Context, batchStatId string, pageRequest *paginator.PageRequest) (*paginator.PageResponse, error) {
@@ -22,6 +28,7 @@ func (bu *BlockUsecase) ListBlocksByBatchStat(ctx context.Context, batchStatId s
 
 	blocks, total, err := bu.repo.FindAllByBatchStatID(ctx, batchStatId, offset, limit)
 	if err != nil {
+		bu.logger.Error().Err(err).Msg("failed to get blocks")
 		return paginator.NewPageResponse(nil, 0, pageRequest), err
 	}
 
@@ -30,9 +37,18 @@ func (bu *BlockUsecase) ListBlocksByBatchStat(ctx context.Context, batchStatId s
 		blocksAny[i] = b
 	}
 
+	bu.logger.Info().Msg("blocks list got")
 	return paginator.NewPageResponse(blocksAny, total, pageRequest), nil
 }
 
 func (bu *BlockUsecase) GetBlockById(ctx context.Context, uid string) (*domain.Block, error) {
-	return bu.repo.FindById(ctx, uid)
+	block, err := bu.repo.FindById(ctx, uid)
+
+	if err != nil {
+		bu.logger.Error().Err(err).Str("block_id", uid).Msg("failed to get block by id")
+		return nil, err
+	}
+
+	bu.logger.Info().Str("block_id", uid).Msg("block found")
+	return block, nil
 }

@@ -1,12 +1,13 @@
 package usecase
 
 import (
+	"github.com/rs/zerolog"
+
 	"github.com/willbrid/api-gateway-sql/config"
 	"github.com/willbrid/api-gateway-sql/internal/domain"
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/dto/paginator"
 	"github.com/willbrid/api-gateway-sql/internal/repository"
-	"github.com/willbrid/api-gateway-sql/pkg/logger"
 
 	"context"
 )
@@ -40,22 +41,22 @@ type Usecases struct {
 }
 
 type Deps struct {
-	Repos   *repository.Repositories
-	Config  *config.Config
-	ILogger logger.ILogger
+	Repos  *repository.Repositories
+	Config *config.Config
+	Logger zerolog.Logger
 }
 
 func NewUsecases(deps Deps) *Usecases {
-	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), deps.Config)
+	sqlQueryUsecase := NewSQLQueryUsecase(deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo), deps.Config, deps.Logger)
 	sqlBatchQueryUsecase := NewSQLBatchQueryUsecase(
 		deps.Repos.ISQLQueryRepo.(*repository.SQLQueryRepo),
 		deps.Repos.IBatchStat.(*repository.BatchStatRepo),
 		deps.Repos.IBlock.(*repository.BlockRepo),
 		deps.Config,
-		deps.ILogger,
+		deps.Logger,
 	)
-	batchStatUsecase := NewBatchStatUsecase(deps.Repos.IBatchStat.(*repository.BatchStatRepo))
-	blockUsecase := NewBlockUsecase(deps.Repos.IBlock.(*repository.BlockRepo))
+	batchStatUsecase := NewBatchStatUsecase(deps.Repos.IBatchStat.(*repository.BatchStatRepo), deps.Logger)
+	blockUsecase := NewBlockUsecase(deps.Repos.IBlock.(*repository.BlockRepo), deps.Logger)
 
 	return &Usecases{
 		ISQLQueryUsecase:      sqlQueryUsecase,
