@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 
-	"github.com/rs/zerolog"
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/sqlqueryhelper"
 )
