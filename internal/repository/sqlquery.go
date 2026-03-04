@@ -7,16 +7,18 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/rs/zerolog"
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 	"github.com/willbrid/api-gateway-sql/internal/pkg/sqlqueryhelper"
 )
 
 type SQLQueryRepo struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger zerolog.Logger
 }
 
-func NewSQLQueryRepo() *SQLQueryRepo {
-	return &SQLQueryRepo{}
+func NewSQLQueryRepo(logger zerolog.Logger) *SQLQueryRepo {
+	return &SQLQueryRepo{logger: logger}
 }
 
 func (r *SQLQueryRepo) SetDB(db *gorm.DB) {
@@ -26,6 +28,8 @@ func (r *SQLQueryRepo) SetDB(db *gorm.DB) {
 func (r *SQLQueryRepo) CloseDB() {
 	if cnx, err := r.db.DB(); err == nil {
 		_ = cnx.Close()
+	} else {
+		r.logger.Error().Err(err).Str("domain", "sqlquery").Msg("unable to close database session")
 	}
 }
 
@@ -35,6 +39,7 @@ func (r *SQLQueryRepo) ExecuteInit(ctx context.Context, sqlQueries []string) err
 			query := strings.TrimSpace(sqlQuery)
 			if query != "" {
 				if err := tx.Exec(query).Error; err != nil {
+					r.logger.Error().Err(err).Str("domain", "sqlquery").Msg("failed to execute transaction for schema creation")
 					return err
 				}
 			}
@@ -60,6 +65,7 @@ func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[str
 
 	tx := cnx.Exec(parsedQuery, parsedParams...)
 	if tx.Error != nil {
+		r.logger.Error().Err(tx.Error).Str("domain", "sqlquery").Str("query", parsedQuery).Msg("failed to execute single query")
 		return nil, tx.Error
 	}
 
@@ -77,6 +83,7 @@ func (r *SQLQueryRepo) ExecuteBatch(ctx context.Context, query string, params []
 		for _, param := range params {
 			parsedQuery, parsedParams := sqlqueryhelper.TransformQuery(query, param)
 			if err := tx.Exec(parsedQuery, parsedParams...).Error; err != nil {
+				r.logger.Error().Err(tx.Error).Str("domain", "sqlquery").Str("query", parsedQuery).Msg("failed to execute batch query")
 				return err
 			}
 		}

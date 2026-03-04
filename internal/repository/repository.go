@@ -6,6 +6,7 @@ import (
 	"github.com/willbrid/api-gateway-sql/internal/domain"
 	"github.com/willbrid/api-gateway-sql/internal/dto"
 
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -36,10 +37,10 @@ type Repositories struct {
 	IBlock        IBlock
 }
 
-func NewRepositories(appDb *gorm.DB) *Repositories {
+func NewRepositories(appDb *gorm.DB, logger zerolog.Logger) *Repositories {
 	return &Repositories{
-		ISQLQueryRepo: NewSQLQueryRepo(),
-		IBatchStat:    NewBatchStatRepo(appDb),
-		IBlock:        NewBlockRepo(appDb),
+		ISQLQueryRepo: NewSQLQueryRepo(logger),
+		IBatchStat:    NewBatchStatRepo(appDb, logger),
+		IBlock:        NewBlockRepo(appDb, logger),
 	}
 }
