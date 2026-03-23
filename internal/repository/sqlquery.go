@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
@@ -50,29 +49,40 @@ func (r *SQLQueryRepo) ExecuteInit(ctx context.Context, sqlQueries []string) err
 }
 
 func (r *SQLQueryRepo) Execute(ctx context.Context, query string, params map[string]any) (*dto.SQLQueryOutput, error) {
-	var result []map[string]any
-	start := time.Now()
-	cnx := r.db
 	parsedQuery, parsedParams := sqlqueryhelper.TransformQuery(query, params)
 
-	if err := cnx.WithContext(ctx).Raw(parsedQuery, parsedParams...).Scan(&result).Error; err == nil {
-		return &dto.SQLQueryOutput{
-			Rows:         result,
-			AffectedRows: int64(len(result)),
-			DurationMs:   time.Since(start).Milliseconds(),
-		}, nil
+	if sqlqueryhelper.IsSelectQuery(parsedQuery) {
+		return r.executeSelect(ctx, parsedQuery, parsedParams)
 	}
 
-	tx := cnx.Exec(parsedQuery, parsedParams...)
+	return r.executeWrite(ctx, parsedQuery, parsedParams)
+}
+
+func (r *SQLQueryRepo) executeSelect(ctx context.Context, query string, params []any) (*dto.SQLQueryOutput, error) {
+	var rows []map[string]any
+
+	if err := r.db.WithContext(ctx).Raw(query, params...).Scan(&rows).Error; err != nil {
+		r.logger.Error().Err(err).Str("query", query).Msg("failed to execute select query")
+		return nil, err
+	}
+
+	return &dto.SQLQueryOutput{
+		Rows:         rows,
+		AffectedRows: int64(len(rows)),
+	}, nil
+}
+
+func (r *SQLQueryRepo) executeWrite(ctx context.Context, query string, params []any) (*dto.SQLQueryOutput, error) {
+	tx := r.db.WithContext(ctx).Exec(query, params...)
+
 	if tx.Error != nil {
-		r.logger.Error().Err(tx.Error).Str("query", parsedQuery).Msg("failed to execute single query")
+		r.logger.Error().Err(tx.Error).Str("query", query).Msg("failed to execute write query")
 		return nil, tx.Error
 	}
 
 	return &dto.SQLQueryOutput{
 		Rows:         nil,
 		AffectedRows: tx.RowsAffected,
-		DurationMs:   time.Since(start).Milliseconds(),
 	}, nil
 }
 

@@ -1,6 +1,9 @@
 package sqlqueryhelper
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 // TransformQuery used to parse query from config target
 func TransformQuery(sqlQuery string, params map[string]any) (string, []any) {
@@ -18,4 +21,14 @@ func TransformQuery(sqlQuery string, params map[string]any) (string, []any) {
 	})
 
 	return transformedQuery, values
+}
+
+// IsSelectQuery used to detect whether a string query is a SELECT or no
+func IsSelectQuery(query string) bool {
+	trimmed := strings.TrimSpace(query)
+	if len(trimmed) < 6 {
+		return false
+	}
+
+	return strings.EqualFold(trimmed[:6], "SELECT")
 }
